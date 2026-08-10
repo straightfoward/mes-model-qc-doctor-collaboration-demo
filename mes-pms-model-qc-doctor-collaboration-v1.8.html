@@ -256,7 +256,8 @@
     .model-qc-note { margin: 9px 0 0 86px; color: #8b3f38; font-size: 12px; }
     .history-event { padding: 12px 14px; border: 1px solid #e1e5ea; background: #fff; }
     .history-event + .history-event { margin-top: 10px; }
-    .history-event-head { display: flex; justify-content: space-between; gap: 16px; font-weight: 700; }
+    .history-event-head { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto; gap: 12px 20px; align-items: center; font-weight: 700; }
+    .history-event-actor { color: #4b5563; font-weight: 600; }
     .history-event-time { color: #667085; font-weight: 400; white-space: nowrap; }
     .history-detail { margin-top: 7px; color: #4b5563; line-height: 1.65; }
     .history-attachment { display: inline-flex; margin-left: 6px; padding: 1px 7px; color: #2f8eb6; background: #eef8fc; border: 1px solid #b9dce9; }
@@ -1303,8 +1304,13 @@
   function cloneConfirmations(items) {
     return items.map(item => ({ id: item.id, question: item.question, issueImage: item.issueImage }));
   }
+  function defaultHistoryActor(type) {
+    if (type === "医生提交") return "悦见测试（医生）";
+    if (type === "客服代录") return "刘雨田（客服）";
+    return state.currentUser + "（质检）";
+  }
   function pushHistoryEvent(type, payload = {}) {
-    state.historyEvents.push({ type, at: historyTimestamp(type), ...payload });
+    state.historyEvents.push({ type, actor: payload.actor || defaultHistoryActor(type), at: historyTimestamp(type), ...payload });
   }
   function submittedMaterialSnapshot(mode) {
     const selector = mode === "proxy" ? ".proxy-material" : ".doctor-material";
@@ -1328,7 +1334,7 @@
       return rows.join("") || "<div>无有效事项</div>";
     }
     if (event.type === "重新分配") {
-      return '<div><strong>处理人：</strong>' + escapeHtml(event.from) + ' → ' + escapeHtml(event.to) + '；<strong>操作人：</strong>' + escapeHtml(event.operator) + '</div>';
+      return '<div><strong>处理人：</strong>' + escapeHtml(event.from) + ' → ' + escapeHtml(event.to) + '</div>';
     }
     if (event.type === "整单撤回") {
       return '<div>本轮协同已整体结束；原有效事项：' + escapeHtml(event.summary) + '。</div>';
@@ -1390,7 +1396,7 @@
   function renderHistory() {
     const events = [...state.historyEvents].reverse();
     $("#history-content").innerHTML = events.length ? events.map(event =>
-      '<section class="history-event"><div class="history-event-head"><span>' + escapeHtml(event.type) + '</span><span class="history-event-time">' + escapeHtml(event.at) + '</span></div><div class="history-detail">' + eventDetails(event) + '</div></section>'
+      '<section class="history-event"><div class="history-event-head"><span>动作：' + escapeHtml(event.type) + '</span><span class="history-event-actor">动作人：' + escapeHtml(event.actor || "-") + '</span><span class="history-event-time">动作时间：' + escapeHtml(event.at) + '</span></div><div class="history-detail">' + eventDetails(event) + '</div></section>'
     ).join("") : '<div style="padding:24px;text-align:center;color:#8a95a3">暂无模型初检医生协同记录</div>';
   }
   function renderFeedback() {
@@ -1786,7 +1792,7 @@
         if (pendingActionRow.id === "restored-pending-row") state.handler = person;
       } else {
         state.handler = person;
-        if (state.collaborationStatus !== "未发起") pushHistoryEvent("重新分配", { from: oldHandler, to: person, operator: state.currentUser });
+        if (state.collaborationStatus !== "未发起") pushHistoryEvent("重新分配", { from: oldHandler, to: person });
       }
       closeModal("reassign");
       renderCollab();
