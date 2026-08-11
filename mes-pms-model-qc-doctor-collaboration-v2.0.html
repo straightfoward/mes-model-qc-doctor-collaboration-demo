@@ -134,7 +134,7 @@
     .editor-section + .editor-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e1e6ec; }
     .editor-section h4 { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; font-size: 14px; }
     .issue-row { display: grid; grid-template-columns: 120px 180px minmax(260px, 1fr) 70px; gap: 10px; align-items: start; margin: 8px 0; }
-    .confirm-row { display: grid; grid-template-columns: 36px minmax(300px, 1fr) 70px; gap: 10px; align-items: start; margin: 8px 0; padding: 10px; background: #fff; border: 1px solid #e1e6ec; }
+    .confirm-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: start; margin: 8px 0; padding: 10px; background: #fff; border: 1px solid #e1e6ec; }
     .upload-mini { min-height: 30px; padding: 5px 8px; color: #4b6175; background: #f7f9fb; border: 1px dashed #aebbc8; border-radius: 3px; text-align: center; }
     .sticky-actions { position: sticky; bottom: 0; display: flex; justify-content: center; gap: 10px; padding: 12px; background: rgba(255,255,255,.97); border-top: 1px solid #dfe4ea; }
 
@@ -426,7 +426,7 @@
               <label class="filter-field"><span>所属门诊</span><select class="select"><option>请选择所属门诊</option></select></label>
               <label class="filter-field"><span>生产工厂</span><select class="select"><option>全部</option></select></label>
               <label class="filter-field"><span>处理人</span><input class="input" id="pending-handler-filter" placeholder="请输入处理人"></label>
-              <label class="filter-field changed"><span>协同状态</span><select class="select changed" id="pending-collab-filter"><option value="all">全部</option><option value="none">未发起（-）</option><option value="feedback">已反馈</option></select></label>
+              <label class="filter-field changed"><span>协同状态</span><select class="select changed" id="pending-collab-filter"><option value="all">全部</option><option value="none">未发起（-）</option><option value="feedback">已反馈</option><option value="withdrawn">已撤回</option></select></label>
               <div class="filters-actions"><button class="btn small" id="pending-filter-reset">重置</button><button class="btn primary small" id="pending-filter-query">查询</button></div>
             </div>
             <div class="qc-tabs">
@@ -441,7 +441,7 @@
                 <tbody id="mes-pending-body">
                   <tr id="restored-pending-row" data-collab-status="none" data-source-active="1" data-original-handler="张吴秀"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td class="pending-handler" id="restored-handler">张吴秀</td><td>待处理</td><td><span class="changed pending-collab-status" id="restored-collab-status">-</span></td><td><div class="feedback-tooltip changed restored-feedback-tooltip" data-full="-"><span class="feedback-clamp restored-feedback-content">-</span></div></td><td class="table-actions"><button class="btn text small pending-detail" data-current-order="1">详情</button><button class="btn text small pending-reassign">重新分配</button><button class="btn text small pending-hang">挂起</button><button class="btn text small pending-void">作废</button></td></tr>
                   <tr id="pending-row-0806" data-collab-status="none" data-source-active="1" data-original-handler="王晨豪"><td>P2026080600187</td><td>LS01P2026080600187</td><td>悦见示范诊所</td><td>李医生</td><td>0806案例B</td><td>重启</td><td>阶段3</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-06 16:21:05</td><td class="pending-handler">王晨豪</td><td>待处理</td><td><span class="changed pending-collab-status">-</span></td><td><div class="feedback-tooltip changed" data-full="-"><span class="feedback-clamp">-</span></div></td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small pending-reassign">重新分配</button><button class="btn text small pending-hang">挂起</button><button class="btn text small pending-void">作废</button></td></tr>
-                  <tr id="pending-row-0804" data-collab-status="feedback" data-source-active="1" data-original-handler="王晨豪"><td>P2026080400136</td><td>LS01P2026080400136</td><td>悦见示范诊所</td><td>王医生</td><td>0804案例D</td><td>重启</td><td>阶段2</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-04 11:16:43</td><td class="pending-handler">王晨豪</td><td>待处理</td><td><span class="changed pending-collab-status">已反馈</span></td><td><div class="feedback-tooltip changed" data-full="确认结果：后续设计资料依据—其他（按患者现有咬合关系设计）"><span class="feedback-clamp">确认结果：后续设计资料依据—其他（按患者现有咬合关系设计）</span></div></td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small pending-reassign">重新分配</button><button class="btn text small pending-hang">挂起</button><button class="btn text small pending-void">作废</button></td></tr>
+                  <tr id="pending-row-0804" data-collab-status="feedback" data-source-active="1" data-original-handler="王晨豪"><td>P2026080400136</td><td>LS01P2026080400136</td><td>悦见示范诊所</td><td>王医生</td><td>0804案例D</td><td>重启</td><td>阶段2</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-04 11:16:43</td><td class="pending-handler">王晨豪</td><td>待处理</td><td><span class="changed pending-collab-status">已反馈</span></td><td><div class="feedback-tooltip changed" data-full="确认：其他（按患者现有咬合关系设计）"><span class="feedback-clamp">确认：其他（按患者现有咬合关系设计）</span></div></td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small pending-reassign">重新分配</button><button class="btn text small pending-hang">挂起</button><button class="btn text small pending-void">作废</button></td></tr>
                   <tr class="pending-filter-empty" id="pending-filter-empty"><td colspan="15">暂无符合当前协同状态的订单</td></tr>
                 </tbody>
               </table>
@@ -527,7 +527,7 @@
                 <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th class="changed">协同状态</th><th class="changed">事项摘要</th><th class="changed">协同反馈内容</th><th class="changed">发起时间</th><th class="changed">反馈时间</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>预计出方案日期</th><th>设计加急</th><th>当前处理人</th><th>任务类型</th><th>质检状态</th><th>操作</th></tr></thead>
                 <tbody id="collab-body">
                   <tr id="collab-row" data-collab-state="未发起" data-collab-active="0" style="display:none"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td><span class="status current changed" id="collab-status">待反馈</span></td><td class="changed" id="collab-summary">资料 2 项，确认 1 项</td><td><div class="feedback-tooltip changed" id="collab-feedback-tooltip" data-full="-"><span class="feedback-clamp" id="collab-feedback-content">-</span></div></td><td class="changed">2026-08-07 10:06:20</td><td class="changed" id="collab-feedback-time">-</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td>2026-08-10 17:30:00</td><td>否</td><td id="handler-cell">张吴秀</td><td>新病例</td><td id="collab-qc-status">已挂起</td><td><div class="table-actions" id="collab-actions"></div></td></tr>
-                  <tr data-collab-state="已反馈"><td>P2026080500128</td><td>LS01P2026080500128</td><td>悦见示范诊所</td><td>李医生</td><td>0805案例C</td><td><span class="status changed">已反馈</span></td><td class="changed">确认 1 项</td><td><div class="feedback-tooltip changed" data-full="确认结果：后续设计资料依据—以口扫为准"><span class="feedback-clamp">确认结果：后续设计资料依据—以口扫为准</span></div></td><td class="changed">2026-08-05 13:18:44</td><td class="changed">2026-08-05 15:07:12</td><td>重启</td><td>阶段3</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-05 12:42:09</td><td>2026-08-08 18:00:00</td><td>否</td><td>王晨豪</td><td>新病例</td><td>待处理</td><td><button class="btn text small">详情</button></td></tr>
+                  <tr data-collab-state="已反馈"><td>P2026080500128</td><td>LS01P2026080500128</td><td>悦见示范诊所</td><td>李医生</td><td>0805案例C</td><td><span class="status changed">已反馈</span></td><td class="changed">确认 1 项</td><td><div class="feedback-tooltip changed" data-full="确认：以口扫为准"><span class="feedback-clamp">确认：以口扫为准</span></div></td><td class="changed">2026-08-05 13:18:44</td><td class="changed">2026-08-05 15:07:12</td><td>重启</td><td>阶段3</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-05 12:42:09</td><td>2026-08-08 18:00:00</td><td>否</td><td>王晨豪</td><td>新病例</td><td>待处理</td><td><button class="btn text small">详情</button></td></tr>
                   <tr class="pending-filter-empty" id="collab-filter-empty"><td colspan="21">暂无符合当前协同状态的记录</td></tr>
                 </tbody>
               </table>
@@ -961,9 +961,10 @@
       || state.collaborationStatus === "已撤回"
       || (state.collaborationStatus === "已反馈" && state.sourceDisposition !== "让步接收");
     const hasFeedback = state.collaborationStatus === "已反馈";
+    const hasWithdrawn = state.collaborationStatus === "已撤回";
     row.dataset.sourceActive = sourceActive ? "1" : "0";
-    row.dataset.collabStatus = hasFeedback ? "feedback" : "none";
-    $("#restored-collab-status").textContent = hasFeedback ? "已反馈" : "-";
+    row.dataset.collabStatus = hasFeedback ? "feedback" : hasWithdrawn ? "withdrawn" : "none";
+    $("#restored-collab-status").textContent = hasFeedback ? "已反馈" : hasWithdrawn ? "已撤回" : "-";
     $("#restored-handler").textContent = state.handler;
     filterPendingRows();
   }
@@ -1381,10 +1382,9 @@
     const replies = state.confirmations.filter(item => !item.withdrawn).map(item => {
       const response = confirmationResponse(mode, item.id);
       if (!response.basis) return "";
-      const answer = response.basis === "其他" ? "其他（" + response.other.trim() + "）" : "以" + response.basis + "为准";
-      return shorten(item.question, 12) + "—" + answer;
+      return response.basis === "其他" ? "其他（" + response.other.trim() + "）" : "以" + response.basis + "为准";
     }).filter(Boolean);
-    if (replies.length) parts.push("确认结果：" + replies.join("；"));
+    if (replies.length) parts.push("确认：" + replies.join("；"));
     return parts.join("；") || "已完成本轮协同";
   }
   function syncOrderPageTitle() {
