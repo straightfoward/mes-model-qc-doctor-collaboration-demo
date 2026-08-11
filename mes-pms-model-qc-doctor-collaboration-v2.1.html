@@ -166,16 +166,17 @@
     .pms-nav span.active { background: var(--pms-cyan); }
     .pms-search { margin-left: auto; width: 210px; padding: 8px 14px; color: #667085; background: #fff; border-radius: 18px; }
     .pms-body { padding: 24px 34px 60px; }
-    .login-reminder { position: fixed; z-index: 95; top: 84px; right: 24px; width: min(360px, calc(100vw - 32px)); display: none; overflow: hidden; background: #fff; border: 1px solid #dbe3ea; border-left: 3px solid var(--pms-cyan); border-radius: 4px; box-shadow: 0 8px 24px rgba(35, 54, 77, .16); }
+    .login-reminder { position: fixed; z-index: 95; top: 84px; right: 24px; width: min(560px, calc(100vw - 32px)); display: none; overflow: hidden; background: #fff; border: 1px solid #dbe3ea; border-left: 3px solid var(--pms-cyan); border-radius: 4px; box-shadow: 0 8px 24px rgba(35, 54, 77, .16); }
     .login-reminder.open { display: block; animation: reminder-in .18s ease-out; }
     .login-reminder-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 13px 14px 8px; }
     .login-reminder-title { display: flex; align-items: center; gap: 8px; color: #24364a; font-size: 14px; }
     .login-reminder-icon { width: 20px; height: 20px; display: grid; flex: 0 0 20px; place-items: center; color: #fff; background: var(--pms-cyan); border-radius: 50%; font-size: 12px; }
     .login-reminder .close { min-width: 24px; min-height: 24px; color: #7a8794; }
-    .login-reminder-note { margin: 0 14px 12px 42px; padding: 12px 14px; color: #a43128; background: #fff4f2; border-left: 4px solid var(--danger); font-size: 16px; font-weight: 700; line-height: 1.55; }
+    .login-reminder-note { margin: 4px 14px 16px 42px; padding: 2px 0; color: #111; font-size: 19px; font-weight: 700; line-height: 1.45; white-space: nowrap; }
     .login-reminder-list { display: grid; padding: 0 14px 12px 42px; }
     .login-reminder-case { display: block; overflow: hidden; padding: 9px 0; border-top: 1px solid #edf0f3; color: #475467; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
     .login-reminder-case strong { color: #26384b; font-size: 13px; }
+    @media (max-width: 620px) { .login-reminder-note { font-size: 17px; white-space: normal; } }
     .task-update-notice { position: fixed; z-index: 94; top: 84px; right: 24px; width: min(330px, calc(100vw - 32px)); display: none; padding: 14px 16px; background: #fff; border: 1px solid #d9e1e8; border-left: 3px solid var(--pms-cyan); border-radius: 4px; box-shadow: 0 8px 24px rgba(35,54,77,.16); }
     .task-update-notice.open { display: block; animation: reminder-in .18s ease-out; }
     .task-update-head { display: flex; align-items: center; gap: 9px; color: #24364a; font-weight: 700; }
@@ -441,7 +442,6 @@
               <button class="qc-tab changed" data-go="mes-collab">医生协同<span class="change-badge">新增</span></button>
               <button class="qc-tab">质检不通过</button><button class="qc-tab">质检通过</button><button class="qc-tab" data-go="mes-hung">已挂起</button><button class="qc-tab">已终止</button>
             </div>
-            <div class="permission-context">当前登录人：<strong id="current-user-label">张吴秀</strong>。操作入口均可见；追加/撤回仅当前处理人可用，重新分配仅当前处理人或模型处理中心成员可用，代录仅客户体验部当前有效成员可用。</div>
             <div class="table-wrap">
               <table class="data">
                 <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>处理人</th><th>质检状态</th><th class="changed">协同状态</th><th class="changed">协同反馈内容</th><th>操作</th></tr></thead>
@@ -529,6 +529,7 @@
               <button class="qc-tab active changed">医生协同<span class="change-badge">新增</span></button>
               <button class="qc-tab">质检不通过</button><button class="qc-tab">质检通过</button><button class="qc-tab" data-go="mes-hung">已挂起</button><button class="qc-tab">已终止</button>
             </div>
+            <div class="permission-context">当前登录人：<strong id="current-user-label">张吴秀</strong>。操作入口均可见；追加/撤回仅当前处理人可用，重新分配仅当前处理人或模型处理中心成员可用，代录仅客户体验部当前有效成员可用。</div>
             <div class="table-wrap">
               <table class="data">
                 <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th class="changed">协同状态</th><th class="changed">事项摘要</th><th class="changed">协同反馈内容</th><th class="changed">发起时间</th><th class="changed">反馈时间</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>预计出方案日期</th><th>设计加急</th><th>当前处理人</th><th>任务类型</th><th>质检状态</th><th>操作</th></tr></thead>
@@ -563,13 +564,12 @@
               <button class="qc-tab">全部订单</button><button class="qc-tab">待分配</button><button class="qc-tab" data-go="mes-list">待处理</button>
               <button class="qc-tab changed" data-go="mes-collab">医生协同</button><button class="qc-tab">质检不通过</button><button class="qc-tab">质检通过</button><button class="qc-tab active">已挂起</button><button class="qc-tab">已终止</button>
             </div>
-            <div class="permission-context">已挂起保留原有操作；本次只新增“重新分配”。追加、撤回、代录统一在医生协同 Tab 执行。</div>
             <div class="table-wrap">
               <table class="data">
-                <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>处理人</th><th>质检状态</th><th>协同状态</th><th>挂起原因</th><th>操作</th></tr></thead>
+                <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>预计出方案日期</th><th>设计加急</th><th>处理人</th><th>任务类型</th><th>质检状态</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr data-shared-collab="1"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td class="pending-handler shared-collab-handler">张吴秀</td><td>已挂起</td><td class="changed">待反馈</td><td>等待医生完善资料</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
-                  <tr><td>P2026080300109</td><td>LS01P2026080300109</td><td>悦见示范诊所</td><td>王医生</td><td>0803案例E</td><td>重启</td><td>阶段2</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-03 10:18:26</td><td class="pending-handler">王晨豪</td><td>已挂起</td><td>-</td><td>等待内部处理</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
+                  <tr data-shared-collab="1" data-doctor="悦见测试" data-patient="0807案例A" data-qc-status="已挂起" data-collab-status="待反馈"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td>2026-08-10 17:30:00</td><td>否</td><td class="pending-handler shared-collab-handler">张吴秀</td><td>新病例</td><td>已挂起</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
+                  <tr data-doctor="王医生" data-patient="0803案例E" data-qc-status="已挂起" data-collab-status="-"><td>P2026080300109</td><td>LS01P2026080300109</td><td>悦见示范诊所</td><td>王医生</td><td>0803案例E</td><td>重启</td><td>阶段2</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-03 10:18:26</td><td>2026-08-06 18:00:00</td><td>否</td><td class="pending-handler">王晨豪</td><td>新病例</td><td>已挂起</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
                 </tbody>
               </table>
             </div>
@@ -922,7 +922,7 @@
     confirmations: [
       { id: "q1", question: "后续设计请确认以口扫、照片、模型还是 CT 为准。", issueImage: true, withdrawn: false }
     ],
-    collaborationStatus: "未发起",
+    collaborationStatus: "待反馈",
     handler: "张吴秀",
     versionUpdated: false,
     submittedBy: "",
@@ -947,6 +947,7 @@
     doctorPageStale: false,
     withdrawnSummary: "",
     pendingRefreshScene: "",
+    formContentLoaded: false,
     sourceDisposition: ""
   });
   let state = initialState();
@@ -1048,7 +1049,17 @@
     if (id === "mes-list") renderPendingSourceTask();
     if (id === "mes-collab") renderCollab();
     if (id === "mes-detail") renderFeedback();
-    if (["pms-workbench", "pms-confirm", "pms-material", "cs-proxy"].includes(id)) renderWorkbench();
+    const formScenes = ["pms-confirm", "pms-material", "cs-proxy"];
+    if (id === "pms-workbench" && !(state.versionUpdated && state.formContentLoaded)) renderWorkbench();
+    if (formScenes.includes(id)) {
+      if (!state.formContentLoaded) {
+        renderWorkbench();
+        state.formContentLoaded = true;
+        state.versionUpdated = false;
+      } else if (!state.versionUpdated) {
+        renderWorkbench();
+      }
+    }
     if (id === "pms-material") syncOrderPageTitle();
     if (id === "pms-workbench" && !state.loginReminderShown) {
       state.loginReminderShown = true;
@@ -1090,16 +1101,16 @@
       prescription: cells[0]?.textContent.trim() || "-",
       order: cells[1]?.textContent.trim() || "-",
       clinic: cells[2]?.textContent.trim() || "-",
-      doctor: cells[3]?.textContent.trim() || "-",
-      patient: cells[4]?.textContent.trim() || "-",
+      doctor: row.dataset.doctor || cells[3]?.textContent.trim() || "-",
+      patient: row.dataset.patient || cells[4]?.textContent.trim() || "-",
       orderType: cells[5]?.textContent.trim() || "-",
       stage: cells[6]?.textContent.trim() || "-",
       product: cells[7]?.textContent.trim() || "-",
       model: cells[8]?.textContent.trim() || "-",
       submittedAt: cells[9]?.textContent.trim() || "-",
-      handler: cells[10]?.textContent.trim() || "-",
-      qcStatus: cells[11]?.textContent.trim() || "-",
-      collabStatus: cells[12]?.textContent.trim() || "-"
+      handler: $(".pending-handler", row)?.textContent.trim() || cells[10]?.textContent.trim() || "-",
+      qcStatus: row.dataset.qcStatus || cells[11]?.textContent.trim() || "-",
+      collabStatus: row.dataset.collabStatus || cells[12]?.textContent.trim() || "-"
     };
   }
   function openPendingDetail(row) {
@@ -1841,6 +1852,8 @@
       state.doctorConfirmResponses = {};
       state.proxyConfirmResponses = {};
       state.historyEvents = [];
+      state.versionUpdated = false;
+      state.formContentLoaded = false;
       pushHistoryEvent("发起医生协同", {
         materials: cloneMaterials(state.activeMaterials),
         confirmations: cloneConfirmations(state.confirmations)
@@ -2008,6 +2021,7 @@
       state.pendingRefreshScene = "";
       $("#task-update-notice").classList.remove("open");
       renderMaterialForms();
+      state.formContentLoaded = true;
       if (refreshScene === "pms-confirm" && state.activeMaterials.some(item => !item.withdrawn)) showScene("pms-material");
       else showScene(refreshScene);
       toast("已暂存当前内容并加载最新事项");
