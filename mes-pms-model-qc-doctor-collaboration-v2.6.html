@@ -310,7 +310,7 @@
     .overview-head { padding: 18px 20px; border-bottom: 1px solid #e0e5ea; }
     .overview-head h2 { margin: 0 0 5px; font-size: 19px; }
     .swimlane-wrap { overflow-x: auto; padding: 16px; background: #f7f9fb; }
-    .swimlane-board { position: relative; width: 1500px; height: 865px; background: #fff; border: 1px solid #cfd7df; }
+    .swimlane-board { position: relative; width: 1500px; height: 970px; background: #fff; border: 1px solid #cfd7df; }
     .swimlane-board svg { width: 100%; height: 100%; display: block; }
     .swim-role { fill: #26384b; font-size: 16px; font-weight: 700; text-anchor: middle; }
     .swim-system { fill: #26384b; font-size: 16px; font-weight: 700; text-anchor: middle; }
@@ -410,26 +410,26 @@
           </div>
           <div class="swimlane-wrap">
             <div class="swimlane-board" aria-label="模型初检医生协同泳道图">
-              <svg viewBox="0 0 1500 865" role="img" aria-labelledby="swim-title swim-desc">
+              <svg viewBox="0 0 1500 970" role="img" aria-labelledby="swim-title swim-desc">
                 <title id="swim-title">模型初检医生协同角色与系统泳道图</title>
                 <desc id="swim-desc">横轴为质检、医生、客服和销售，纵轴为MES、PMS和企微，序号和箭头表示协同时序与结果分支。</desc>
                 <defs>
                   <marker id="swim-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#65788b"/></marker>
                 </defs>
 
-                <rect x="0" y="0" width="1500" height="865" fill="#fff"/>
-                <rect class="swim-system-band" x="0" y="58" width="120" height="520"/>
-                <rect class="swim-system-band" x="0" y="578" width="120" height="165"/>
-                <rect class="swim-system-band" x="0" y="743" width="120" height="122"/>
-                <rect class="swim-role-band" x="120" y="58" width="345" height="807"/>
-                <rect class="swim-role-band" x="810" y="58" width="345" height="807"/>
-                <line class="swim-grid" x1="120" y1="0" x2="120" y2="865"/>
-                <line class="swim-grid" x1="465" y1="0" x2="465" y2="865"/>
-                <line class="swim-grid" x1="810" y1="0" x2="810" y2="865"/>
-                <line class="swim-grid" x1="1155" y1="0" x2="1155" y2="865"/>
+                <rect x="0" y="0" width="1500" height="970" fill="#fff"/>
+                <rect class="swim-system-band" x="0" y="58" width="120" height="592"/>
+                <rect class="swim-system-band" x="0" y="650" width="120" height="165"/>
+                <rect class="swim-system-band" x="0" y="815" width="120" height="155"/>
+                <rect class="swim-role-band" x="120" y="58" width="345" height="912"/>
+                <rect class="swim-role-band" x="810" y="58" width="345" height="912"/>
+                <line class="swim-grid" x1="120" y1="0" x2="120" y2="970"/>
+                <line class="swim-grid" x1="465" y1="0" x2="465" y2="970"/>
+                <line class="swim-grid" x1="810" y1="0" x2="810" y2="970"/>
+                <line class="swim-grid" x1="1155" y1="0" x2="1155" y2="970"/>
                 <line class="swim-grid" x1="0" y1="58" x2="1500" y2="58"/>
-                <line class="swim-grid" x1="0" y1="578" x2="1500" y2="578"/>
-                <line class="swim-grid" x1="0" y1="743" x2="1500" y2="743"/>
+                <line class="swim-grid" x1="0" y1="650" x2="1500" y2="650"/>
+                <line class="swim-grid" x1="0" y1="815" x2="1500" y2="815"/>
 
                 <text class="swim-system" x="60" y="31">系统</text>
                 <text class="swim-axis-note" x="60" y="48">序号为时序</text>
@@ -437,39 +437,48 @@
                 <text class="swim-role" x="637" y="35">医生</text>
                 <text class="swim-role" x="982" y="35">客服</text>
                 <text class="swim-role" x="1327" y="35">销售（仅接收通知）</text>
-                <text class="swim-system" x="60" y="320">MES</text>
-                <text class="swim-system" x="60" y="668">PMS</text>
-                <text class="swim-system" x="60" y="808">企微</text>
+                <text class="swim-system" x="60" y="354">MES</text>
+                <text class="swim-system" x="60" y="738">PMS</text>
+                <text class="swim-system" x="60" y="898">企微</text>
 
                 <rect class="swim-phase" x="136" y="72" width="312" height="26" rx="3"/><text class="swim-phase-text" x="292" y="90">发起与等待</text>
                 <rect class="swim-phase" x="481" y="72" width="658" height="26" rx="3"/><text class="swim-phase-text" x="810" y="90">医生线上提交 / 客服线下代录（二选一，首次成功生效）</text>
                 <rect class="swim-phase" x="1168" y="72" width="316" height="26" rx="3"/><text class="swim-phase-text" x="1326" y="90">通知跟进</text>
 
-                <g transform="translate(145 116)"><rect class="swim-node existing-node" width="296" height="58"/><circle class="swim-step existing-step" cx="20" cy="20" r="13"/><text class="swim-step-text existing-step-text" x="20" y="20">1</text><text class="swim-title" x="42" y="22">[已有] 打开模型初检待处理任务</text><text class="swim-copy" x="42" y="42">判断是否需要医生完善资料或确认</text></g>
-                <g transform="translate(145 196)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">2</text><text class="swim-title" x="42" y="22">发起医生协同</text><text class="swim-copy" x="42" y="42">资料需完善和医生需确认可同时选择</text><text class="swim-copy" x="42" y="56">生成一张有效协同单</text></g>
-                <g transform="translate(145 284)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">3</text><text class="swim-title" x="42" y="22">源任务挂起，协同待反馈</text><text class="swim-copy" x="42" y="42">生成PMS待办并暂停模型初检时限</text><text class="swim-copy" x="42" y="56">操作信息生成一轮协同记录</text></g>
-                <g transform="translate(145 382)"><rect class="swim-node changed-node" width="296" height="82"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5A</text><text class="swim-title" x="42" y="22">等待期间管理协同</text><text class="swim-copy" x="42" y="42">追加：更新同一待办并保留医生草稿</text><text class="swim-copy" x="42" y="57">重新分配：更新当前处理人</text><text class="swim-copy" x="42" y="72">撤回：关闭待办并恢复待处理</text></g>
-                <g transform="translate(145 484)"><rect class="swim-node result-node" width="996" height="76"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">8</text><text class="swim-title" x="42" y="22">MES 接收首次成功提交，协同转已反馈并落定结果</text><text class="swim-copy" x="42" y="43">模型更新 → 质检不通过 + [已有]工序重置；仅照片/CT更新 → 质检不通过 + [已有]资料重提</text><text class="swim-copy" x="42" y="61">仅确认 → 源任务恢复待处理；未更新待完善模型且医生同意继续 → 按既定分支映射[已有]让步接收</text></g>
+                <g transform="translate(145 112)"><rect class="swim-node existing-node" width="296" height="58"/><circle class="swim-step existing-step" cx="20" cy="20" r="13"/><text class="swim-step-text existing-step-text" x="20" y="20">1</text><text class="swim-title" x="42" y="22">[已有] 打开模型初检待处理任务</text><text class="swim-copy" x="42" y="42">判断是否需要医生完善资料或确认</text></g>
+                <g transform="translate(145 190)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">2</text><text class="swim-title" x="42" y="22">发起医生协同</text><text class="swim-copy" x="42" y="42">资料需完善和医生需确认可同时选择</text><text class="swim-copy" x="42" y="56">生成一张有效协同单</text></g>
+                <g id="swim-waiting" transform="translate(145 276)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">3</text><text class="swim-title" x="42" y="22">源任务挂起，协同待反馈</text><text class="swim-copy" x="42" y="42">生成PMS待办并暂停模型初检时限</text><text class="swim-copy" x="42" y="56">操作信息生成一轮协同记录</text></g>
+                <g id="swim-wait-manage" transform="translate(145 370)"><rect class="swim-node changed-node" width="296" height="82"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5A</text><text class="swim-title" x="42" y="22">追加 / 重新分配（可选）</text><text class="swim-copy" x="42" y="42">追加：更新同一待办并保留医生草稿</text><text class="swim-copy" x="42" y="57">重新分配：更新当前处理人</text><text class="swim-copy" x="42" y="72">完成后协同仍为待反馈</text></g>
+                <g id="swim-withdraw-terminal" transform="translate(145 480)"><rect class="swim-node changed-node" width="296" height="70"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">7A</text><text class="swim-title" x="42" y="22">撤回协同（可选终止）</text><text class="swim-copy" x="42" y="43">协同转已撤回，源任务恢复待处理</text><text class="swim-copy" x="42" y="59">关闭 PMS 待办，不进入第 8 步</text></g>
+                <g id="swim-result" transform="translate(145 565)"><rect class="swim-node result-node" width="996" height="72"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">8</text><text class="swim-title" x="42" y="22">MES 接收医生或客服首次成功提交，协同转已反馈并落定结果</text><text class="swim-copy" x="42" y="42">模型更新 → 质检不通过 + [已有]工序重置；仅照片/CT更新 → 质检不通过 + [已有]资料重提</text><text class="swim-copy" x="42" y="59">仅确认 → 源任务恢复待处理；未更新待完善模型且医生同意继续 → 按既定分支映射[已有]让步接收</text></g>
 
-                <g transform="translate(490 590)"><rect class="swim-node changed-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5B</text><text class="swim-title" x="42" y="20">点击修改并处理全部有效事项</text><text class="swim-copy" x="42" y="38">确认问题、更新正式资料或确认继续使用模型</text></g>
-                <g transform="translate(490 646)"><rect class="swim-node changed-node" width="296" height="42"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6B</text><text class="swim-title" x="42" y="20">医生提交</text><text class="swim-copy" x="150" y="20">回传回复、资料变化和回复图片</text></g>
-                <g transform="translate(490 696)"><rect class="swim-node" width="296" height="38"/><circle class="swim-step" cx="20" cy="19" r="13"/><text class="swim-step-text" x="20" y="19">9A</text><text class="swim-title" x="42" y="18">关闭待办并更新时间轴</text><text class="swim-copy" x="174" y="18">移除操作入口</text></g>
-                <g transform="translate(490 756)"><rect class="swim-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">4A</text><text class="swim-title" x="42" y="20">收到企微待完善提醒</text><text class="swim-copy" x="42" y="38">按指引进入工作台待完善病例</text></g>
+                <g transform="translate(490 662)"><rect class="swim-node changed-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5B</text><text class="swim-title" x="42" y="20">点击修改并处理全部有效事项</text><text class="swim-copy" x="42" y="38">确认问题、更新正式资料或确认继续使用模型</text></g>
+                <g transform="translate(490 725)"><rect class="swim-node changed-node" width="296" height="42"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6B</text><text class="swim-title" x="42" y="20">医生提交</text><text class="swim-copy" x="150" y="20">回传回复、资料变化和回复图片</text></g>
+                <g transform="translate(490 775)"><rect class="swim-node" width="296" height="32"/><circle class="swim-step" cx="20" cy="16" r="12"/><text class="swim-step-text" x="20" y="16">9A</text><text class="swim-title" x="42" y="16">关闭待办并更新时间轴</text><text class="swim-copy" x="174" y="16">移除操作入口</text></g>
+                <g transform="translate(490 830)"><rect class="swim-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">4A</text><text class="swim-title" x="42" y="20">收到企微待完善提醒</text><text class="swim-copy" x="42" y="38">按指引进入工作台待完善病例</text></g>
 
-                <g transform="translate(835 382)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6C</text><text class="swim-title" x="42" y="22">客服代录</text><text class="swim-copy" x="42" y="42">复用医生表单录入反馈和资料</text><text class="swim-copy" x="42" y="56">上传沟通截图并提交</text></g>
-                <g transform="translate(835 756)"><rect class="swim-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5C</text><text class="swim-title" x="42" y="20">通过企微线下收到医生反馈</text><text class="swim-copy" x="42" y="38">由客户体验部成员进入 MES 代录</text></g>
+                <g transform="translate(835 370)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6C</text><text class="swim-title" x="42" y="22">客服代录</text><text class="swim-copy" x="42" y="42">复用医生表单录入反馈和资料</text><text class="swim-copy" x="42" y="56">上传沟通截图并提交</text></g>
+                <g transform="translate(835 830)"><rect class="swim-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5C</text><text class="swim-title" x="42" y="20">通过企微线下收到医生反馈</text><text class="swim-copy" x="42" y="38">由客户体验部成员进入 MES 代录</text></g>
 
-                <g transform="translate(1180 750)"><rect class="swim-node" width="296" height="46"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">4B</text><text class="swim-title" x="42" y="20">收到首次协同跟进通知</text><text class="swim-copy" x="42" y="37">协助关注医生处理进度</text></g>
-                <g transform="translate(1180 808)"><rect class="swim-node" width="296" height="46"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">9B</text><text class="swim-title" x="42" y="20">收到待完善事项完成通知</text><text class="swim-copy" x="42" y="37">按既定通知规则发送</text></g>
+                <g transform="translate(1180 825)"><rect class="swim-node" width="296" height="44"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">4B</text><text class="swim-title" x="42" y="20">收到首次协同跟进通知</text><text class="swim-copy" x="42" y="37">协助关注医生处理进度</text></g>
+                <g transform="translate(1180 890)"><rect class="swim-node" width="296" height="44"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">9B</text><text class="swim-title" x="42" y="20">收到待完善事项完成通知</text><text class="swim-copy" x="42" y="37">按既定通知规则发送</text></g>
 
-                <path class="swim-arrow" d="M293 174 L293 196"/><path class="swim-arrow" d="M293 262 L293 284"/>
-                <path class="swim-arrow branch" d="M441 317 H465 V780 H490"/><text class="swim-branch-label" x="470" y="340">线上提醒</text>
-                <path class="swim-arrow branch" d="M441 328 H810 V780 H835"/><text class="swim-branch-label" x="690" y="350">线下反馈</text>
-                <path class="swim-arrow" d="M637 756 L637 638"/><path class="swim-arrow" d="M637 638 L637 646"/><path class="swim-arrow" d="M982 756 L982 448"/>
-                <path class="swim-arrow" d="M293 350 L293 382"/><path class="swim-arrow branch" d="M293 464 L293 484"/><text class="swim-branch-label" x="305" y="478">撤回</text>
-                <path class="swim-arrow" d="M637 646 V560"/><path class="swim-arrow" d="M982 448 V484"/>
-                <path class="swim-arrow" d="M441 339 H1155 V773 H1180"/>
-                <path class="swim-arrow" d="M637 560 V696"/><path class="swim-arrow" d="M1138 522 H1160 V831 H1180"/>
+                <path class="swim-arrow" d="M293 170 V190"/><path class="swim-arrow" d="M293 256 V276"/>
+                <path class="swim-arrow branch" data-flow="wait-manage" d="M293 342 V370"/>
+                <path class="swim-arrow branch" data-flow="wait-withdraw" d="M145 330 H130 V515 H145"/><text class="swim-branch-label" x="134" y="470">撤回</text>
+
+                <path class="swim-arrow branch" d="M441 298 H1148 V885 H637 V878"/><text class="swim-branch-label" x="484" y="292">线上提醒</text>
+                <path class="swim-arrow" d="M441 318 H1160 V847 H1180"/><text class="swim-branch-label" x="1038" y="312">销售跟进通知</text>
+
+                <path class="swim-arrow" d="M637 830 V710"/>
+                <path class="swim-arrow" d="M637 710 V725"/>
+                <path class="swim-arrow" data-flow="doctor-submit-result" d="M490 746 H455 V637"/>
+                <path class="swim-arrow branch" d="M786 854 H835"/><text class="swim-branch-label" x="790" y="846">线下反馈</text>
+                <path class="swim-arrow" d="M1131 854 H1138 V403 H1131"/>
+                <path class="swim-arrow" data-flow="proxy-submit-result" d="M983 436 V565"/>
+
+                <path class="swim-arrow" d="M770 637 V775"/>
+                <path class="swim-arrow" d="M1141 601 H1490 V912 H1476"/>
               </svg>
             </div>
           </div>
