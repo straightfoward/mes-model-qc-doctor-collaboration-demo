@@ -1,0 +1,2262 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>模型初检医生协同流程交互原型 v2.6</title>
+  <style>
+    :root {
+      --mes-nav: #23364d;
+      --mes-nav-deep: #18283a;
+      --mes-blue: #409eff;
+      --pms-cyan: #58bdd8;
+      --danger: #d93025;
+      --danger-soft: #fff2f0;
+      --suggested: #2f8eb6;
+      --suggested-soft: #f2f9fc;
+      --success: #2f8f5b;
+      --warning: #b7791f;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #dfe4ea;
+      --soft: #f4f6f8;
+      --white: #fff;
+      --radius: 4px;
+      --shadow: 0 2px 10px rgba(25, 42, 62, .12);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; color: var(--ink); background: #e9edf1; font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; font-size: 14px; letter-spacing: 0; }
+    button, input, select, textarea { font: inherit; letter-spacing: 0; }
+    button { cursor: pointer; }
+    .prototype { min-height: 100vh; display: grid; grid-template-columns: 216px minmax(0, 1fr); }
+    .scene-nav { position: sticky; top: 0; height: 100vh; overflow: auto; color: #dbe6f2; background: var(--mes-nav-deep); border-right: 1px solid #1a2939; }
+    .nav-brand { height: 64px; padding: 15px 16px; color: #fff; font-size: 16px; font-weight: 700; border-bottom: 1px solid #34465a; }
+    .nav-version { display: block; margin-top: 3px; color: #91a7bd; font-size: 11px; font-weight: 400; }
+    .nav-group { padding: 12px 10px 4px; color: #8197ad; font-size: 11px; }
+    .scene-link { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 9px; margin: 2px 0; padding: 8px 10px; color: #dbe6f2; background: transparent; border: 0; border-left: 3px solid transparent; text-align: left; }
+    .scene-link:hover { background: #253b52; }
+    .scene-link.active { color: #fff; background: #2b425a; border-left-color: #5fc3df; }
+    .scene-index { width: 22px; color: #94abc1; font-size: 11px; }
+    .demo-main { min-width: 0; }
+    .demo-topbar { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 18px; background: #fff; border-bottom: 1px solid #d7dde4; }
+    .demo-title { min-width: 0; }
+    .demo-title h1 { margin: 0; font-size: 17px; line-height: 1.4; }
+    .demo-title p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .role-tag { padding: 4px 8px; color: #30465b; background: #edf2f6; border: 1px solid #d5dee7; border-radius: 3px; font-size: 12px; }
+    .scene { display: none; min-height: calc(100vh - 64px); }
+    .scene.active { display: block; }
+    .canvas { min-height: calc(100vh - 64px); padding: 14px; overflow: auto; }
+    .btn { min-height: 30px; padding: 5px 14px; color: #344054; background: #fff; border: 1px solid #cfd6de; border-radius: var(--radius); }
+    .btn:hover { border-color: #8fb7dc; }
+    .btn.primary { color: #fff; background: var(--mes-blue); border-color: var(--mes-blue); }
+    .btn.danger { color: #fff; background: var(--danger); border-color: var(--danger); }
+    .btn.text { min-height: 24px; padding: 2px 5px; color: #2787ce; background: transparent; border: 0; }
+    .btn.small { min-height: 25px; padding: 3px 9px; font-size: 12px; }
+    .btn:disabled { cursor: not-allowed; opacity: .52; }
+    .changed { color: var(--danger) !important; }
+    .change-badge { display: inline-block; margin-left: 5px; padding: 1px 5px; color: var(--danger); background: var(--danger-soft); border: 1px solid #efb8b2; border-radius: 2px; font-size: 10px; vertical-align: middle; }
+    .existing { color: #667085; font-size: 11px; }
+    .status { display: inline-flex; align-items: center; min-height: 22px; padding: 2px 7px; color: #475467; background: #f2f4f7; border: 1px solid #d9dee5; border-radius: 3px; font-size: 12px; }
+    .status.current { color: #344054; background: #eef2f5; border-color: #cfd7df; }
+    .error { display: none; margin-top: 5px; color: var(--danger); font-size: 12px; }
+    .error.show { display: block; }
+    .field-invalid { border-color: var(--danger) !important; background: #fffafa !important; }
+    .toast { position: fixed; z-index: 120; right: 22px; top: 78px; max-width: 420px; padding: 10px 14px; color: #fff; background: #26384a; border-radius: var(--radius); box-shadow: var(--shadow); opacity: 0; transform: translateY(-8px); pointer-events: none; transition: .18s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* MES */
+    .mes-app { min-width: 1180px; min-height: calc(100vh - 92px); display: grid; grid-template-columns: 142px minmax(0, 1fr); background: #f3f5f7; border: 1px solid #cfd6de; box-shadow: var(--shadow); }
+    .mes-side { color: #dbe6f2; background: var(--mes-nav); }
+    .mes-logo { height: 48px; display: flex; align-items: center; padding: 0 12px; color: #fff; font-weight: 700; background: #1c2d40; }
+    .mes-menu-title { padding: 13px 14px 8px; color: #91a7bd; font-size: 11px; }
+    .mes-menu { padding: 10px 15px; color: #e5edf5; border-left: 3px solid transparent; }
+    .mes-menu.active { color: #63c4e1; background: #1e3043; border-left-color: #63c4e1; }
+    .mes-content { min-width: 0; background: #fff; }
+    .mes-breadcrumb { height: 48px; display: flex; align-items: center; padding: 0 15px; color: #7c8794; border-bottom: 1px solid #dfe4ea; }
+    .mes-tabstrip { height: 34px; display: flex; align-items: center; gap: 5px; padding: 0 12px; background: #fafbfc; border-bottom: 1px solid #e4e7eb; }
+    .window-tab { padding: 4px 9px; background: #fff; border: 1px solid #d7dde4; font-size: 12px; }
+    .window-tab.current { color: #fff; background: #4dbc7f; border-color: #4dbc7f; }
+    .filters { display: grid; grid-template-columns: repeat(4, minmax(210px, 1fr)); gap: 10px 24px; padding: 16px 12px; background: #fff; border-bottom: 12px solid #f4f6f8; }
+    #mes-list .filters { grid-template-columns: repeat(5, minmax(170px, 1fr)); }
+    .filter-field { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 8px; }
+    .input, .select, .textarea { width: 100%; min-height: 30px; padding: 5px 9px; color: #344054; background: #fff; border: 1px solid #d4dae1; border-radius: 3px; }
+    .textarea { min-height: 80px; resize: vertical; }
+    .filters-actions { display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+    .qc-tabs { display: flex; align-items: end; gap: 25px; min-height: 50px; padding: 0 14px; border-bottom: 1px solid #dfe4ea; white-space: nowrap; }
+    .qc-tab { position: relative; padding: 17px 0 13px; color: #263444; background: transparent; border: 0; }
+    .qc-tab.active { color: #2589d3; }
+    .qc-tab.active::after { content: ""; position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: #2589d3; }
+    .table-wrap { min-width: 0; overflow: auto; }
+    table.data { width: 100%; min-width: 1280px; border-collapse: collapse; font-size: 12px; }
+    table.data th, table.data td { height: 48px; padding: 8px 10px; text-align: left; border-bottom: 1px solid #e1e5ea; white-space: nowrap; }
+    table.data th { height: 40px; color: #344054; font-weight: 500; background: #fff; }
+    #mes-list table.data { min-width: 1500px; }
+    #mes-collab table.data { min-width: 2220px; }
+    .table-actions { display: flex; gap: 3px; }
+    .mes-pagination { display: flex; justify-content: flex-end; gap: 10px; padding: 12px; color: #667085; border-top: 1px solid #e4e7eb; }
+    .pending-filter-empty { display: none; }
+    .pending-filter-empty.show { display: table-row; }
+    .pending-filter-empty td { height: 120px !important; color: #667085; text-align: center !important; }
+
+    .detail-body { padding: 18px 20px 90px; background: #fff; }
+    .detail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .detail-head h2 { margin: 0; font-size: 18px; }
+    .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 24px; padding: 14px; background: #fafbfc; border: 1px solid #e2e7ec; }
+    .info-grid span { color: #667085; }
+    .qc-box { margin-top: 18px; border-top: 1px solid #dde3e9; }
+    .qc-box h3 { margin: 16px 0 12px; font-size: 15px; }
+    .result-radios { display: flex; flex-wrap: wrap; gap: 22px; margin: 12px 0 16px; }
+    .result-radios label { display: inline-flex; align-items: center; gap: 6px; }
+    .collab-editor { padding: 14px; background: #fbfcfd; border: 1px solid #e0e5ea; }
+    .module-selector { display: grid; gap: 10px; margin-bottom: 14px; padding: 11px 12px; background: #fff; border: 1px solid #e1e6ec; }
+    .module-choice { display: inline-flex; align-items: center; gap: 7px; min-width: 150px; font-weight: 700; }
+    .module-choice input, .location-option input { accent-color: var(--danger); }
+    .structured-materials { overflow: hidden; background: #fff; border: 1px solid #dfe5eb; }
+    .location-row { display: grid; grid-template-columns: 34px 118px minmax(0, 1fr); align-items: start; min-height: 52px; padding: 10px 12px; border-bottom: 1px solid #e7ebef; }
+    .location-row:last-child { border-bottom: 0; }
+    .location-index { width: 24px; height: 24px; display: grid; place-items: center; color: #fff; background: var(--danger); border-radius: 50%; font-size: 12px; }
+    .location-title { padding-top: 3px; font-weight: 700; }
+    .location-content { min-width: 0; }
+    .location-options { display: flex; flex-wrap: wrap; gap: 7px 18px; }
+    .location-option { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; }
+    .material-inline-editors { display: grid; gap: 8px; }
+    .material-inline-editor { margin-top: 9px; overflow: hidden; background: #fff; border: 1px solid #e3b4ae; border-left: 3px solid var(--danger); }
+    .material-inline-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 36px; padding: 7px 10px; color: #8c3b34; background: #fff7f5; font-weight: 700; }
+    .material-inline-head button { color: #667085; background: transparent; border: 0; }
+    .material-inline-body { padding: 10px; }
+    .material-inline-editor[hidden] { display: none; }
+    .material-inline-editor.collapsed .material-inline-body { display: none; }
+    .material-inline-editor.collapsed .material-inline-head button::after { content: "展开"; }
+    .material-inline-editor:not(.collapsed) .material-inline-head button::after { content: "收起"; }
+    .rich-editor { overflow: hidden; background: #fff; border: 1px solid #d4dae1; border-radius: 3px; }
+    .rich-toolbar { display: flex; gap: 12px; min-height: 30px; align-items: center; padding: 4px 9px; color: #6b7280; background: #f7f9fb; border-bottom: 1px solid #e1e6ec; font-size: 12px; }
+    .rich-toolbar .upload-problem { margin-left: auto; padding: 2px 7px; color: #4b6175; background: #fff; border: 1px dashed #aebbc8; }
+    .rich-editor .textarea { border: 0; border-radius: 0; }
+    .module-hidden { display: none !important; }
+    .editor-section + .editor-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e1e6ec; }
+    .editor-section h4 { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; font-size: 14px; }
+    .issue-row { display: grid; grid-template-columns: 120px 180px minmax(260px, 1fr) 70px; gap: 10px; align-items: start; margin: 8px 0; }
+    .confirm-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: start; margin: 8px 0; padding: 10px; background: #fff; border: 1px solid #e1e6ec; }
+    .confirmation-messages { display: grid; gap: 10px; }
+    .confirmation-message { padding: 10px 12px; background: #fbfcfd; border-left: 3px solid #58bdd8; }
+    .confirmation-message p { margin: 0; line-height: 1.7; white-space: pre-wrap; }
+    .confirmation-answer { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e1e6ec; }
+    .upload-mini { min-height: 30px; padding: 5px 8px; color: #4b6175; background: #f7f9fb; border: 1px dashed #aebbc8; border-radius: 3px; text-align: center; }
+    .sticky-actions { position: sticky; bottom: 0; display: flex; justify-content: center; gap: 10px; padding: 12px; background: rgba(255,255,255,.97); border-top: 1px solid #dfe4ea; }
+
+    /* Modal */
+    .modal-layer { position: fixed; z-index: 90; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(20, 31, 44, .46); }
+    .modal-layer.open { display: flex; }
+    .modal { width: min(760px, 96vw); max-height: 88vh; overflow: auto; background: #fff; border: 1px solid #cfd6de; border-radius: 5px; box-shadow: 0 14px 40px rgba(13, 28, 44, .25); }
+    .modal.wide { width: min(980px, 96vw); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; font-weight: 700; border-bottom: 1px solid #dfe4ea; }
+    .modal-body { padding: 16px; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid #dfe4ea; }
+    .close { width: 28px; height: 28px; color: #667085; background: transparent; border: 0; font-size: 20px; }
+    .check-list { display: grid; gap: 8px; }
+    .check-item { display: grid; grid-template-columns: 22px 110px 1fr; gap: 8px; padding: 9px; border: 1px solid #e0e5ea; }
+    .person-search { position: relative; }
+    .suggestions { display: none; position: absolute; z-index: 3; top: 34px; right: 0; left: 0; background: #fff; border: 1px solid #ccd5de; box-shadow: var(--shadow); }
+    .suggestions.show { display: block; }
+    .suggestion { width: 100%; padding: 9px; background: #fff; border: 0; border-bottom: 1px solid #edf0f3; text-align: left; }
+    .permission-context { padding: 8px 14px; color: #596273; background: #f8fafc; border-bottom: 1px solid #e0e5ea; font-size: 12px; }
+    .permission-note { display: inline-block; padding: 3px 5px; color: #8a5b24; background: #fff7e8; border: 1px solid #ead1a2; white-space: nowrap; }
+    .table-actions .btn:disabled { display: inline-flex; color: #a7afb9; background: transparent; border: 0; opacity: 1; }
+
+    /* PMS */
+    .pms-app { min-width: 1040px; min-height: calc(100vh - 92px); background: #f3f5f7; border: 1px solid #cfd6de; box-shadow: var(--shadow); }
+    .pms-top { height: 64px; display: flex; align-items: center; padding: 0 36px; color: #fff; background: #202020; }
+    .pms-logo { width: 240px; font-size: 22px; font-weight: 700; }
+    .pms-nav { display: flex; height: 64px; }
+    .pms-nav span { min-width: 96px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .pms-nav span.active { background: var(--pms-cyan); }
+    .pms-search { margin-left: auto; width: 210px; padding: 8px 14px; color: #667085; background: #fff; border-radius: 18px; }
+    .pms-body { padding: 24px 34px 60px; }
+    .login-reminder { position: fixed; z-index: 95; top: 84px; left: 50%; width: min(520px, calc(100vw - 32px)); display: none; overflow: hidden; background: #fff; border: 1px solid #dbe3ea; border-left: 3px solid var(--pms-cyan); border-radius: 4px; box-shadow: 0 8px 24px rgba(35, 54, 77, .16); transform: translateX(-50%); }
+    .login-reminder.open { display: block; animation: reminder-in .18s ease-out; }
+    .login-reminder-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 13px 14px 8px; }
+    .login-reminder-title { display: flex; align-items: center; gap: 8px; color: #24364a; font-size: 14px; }
+    .login-reminder-icon { width: 20px; height: 20px; display: grid; flex: 0 0 20px; place-items: center; color: #fff; background: var(--pms-cyan); border-radius: 50%; font-size: 12px; }
+    .login-reminder .close { min-width: 24px; min-height: 24px; color: #7a8794; }
+    .login-reminder-note { margin: 6px 14px 14px 42px; padding: 2px 0; color: #17202b; font-size: 16px; font-weight: 700; line-height: 1.45; white-space: nowrap; }
+    .login-reminder-list { display: grid; padding: 0 14px 12px 42px; }
+    .login-reminder-case { display: block; overflow: hidden; padding: 9px 0; border-top: 1px solid #edf0f3; color: #475467; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .login-reminder-case strong { color: #26384b; font-size: 13px; }
+    @media (max-width: 620px) { .login-reminder-note { font-size: 15px; white-space: normal; } }
+    .task-update-notice { position: fixed; z-index: 94; top: 84px; left: 50%; width: min(310px, calc(100vw - 32px)); display: none; padding: 13px 15px; background: #fff; border: 1px solid #d9e1e8; border-left: 3px solid var(--pms-cyan); border-radius: 4px; box-shadow: 0 8px 24px rgba(35,54,77,.16); transform: translateX(-50%); }
+    .task-update-notice.open { display: block; animation: reminder-in .18s ease-out; }
+    .task-update-head { display: flex; align-items: center; gap: 9px; color: #24364a; font-weight: 700; }
+    .task-update-actions { margin-top: 10px; padding-left: 29px; }
+    .task-update-actions button { min-height: 0; padding: 0; color: #287fbd; background: transparent; border: 0; font-weight: 700; }
+    @keyframes reminder-in { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    .metric-row { display: grid; grid-template-columns: repeat(5, minmax(150px, 1fr)); gap: 18px; }
+    .metric { min-height: 92px; padding: 18px; background: #fff; border-left: 5px solid #c7d3df; box-shadow: var(--shadow); }
+    .metric.pending { border-left-color: var(--danger); }
+    .metric strong { display: block; font-size: 30px; line-height: 1.1; }
+    .metric span { color: #596273; font-size: 16px; }
+    .workbench-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+    .workbench-panel h2 { margin: 0 0 10px; color: #556171; font-size: 21px; }
+    .case-list { background: #fff; box-shadow: var(--shadow); }
+    .case-row { display: grid; grid-template-columns: 36px minmax(150px, 1fr) minmax(92px, auto) 52px; gap: 10px; align-items: center; min-height: 82px; padding: 10px 10px; border-bottom: 1px solid #edf0f3; font-size: 12px; }
+    .avatar { width: 36px; height: 36px; display: grid; place-items: center; color: #fff; background: #61778b; border-radius: 50%; font-size: 12px; }
+    .case-main strong, .case-main span { display: block; }
+    .case-main span { margin-top: 5px; color: #667085; font-size: 12px; }
+    .case-summary { min-width: 0; overflow: hidden; color: #4b5563; text-overflow: ellipsis; white-space: nowrap; }
+    .case-action { color: #3ca6d4; background: #fff; border: 1px solid #62bfdf; border-radius: 3px; min-height: 30px; }
+
+    .case-detail { max-width: 1180px; margin: 0 auto; }
+    .case-header { margin-bottom: 12px; padding: 14px 16px; background: #fff; border: 1px solid #e0e5ea; }
+    .case-header h2 { margin: 0 0 8px; font-size: 20px; }
+    .case-meta { display: flex; flex-wrap: wrap; gap: 22px; color: #596273; }
+    .task-summary { margin-bottom: 14px; padding: 12px 14px; color: #813b34; background: #fff6f4; border: 1px solid #edbeb7; }
+    .material-page { display: grid; grid-template-columns: 188px minmax(0, 1fr); align-items: start; background: #fff; border: 1px solid #dfe4ea; }
+    .material-sidebar { position: sticky; top: 12px; min-height: 420px; padding: 12px; background: #f7f9fb; border-right: 1px solid #dfe4ea; }
+    .material-main { min-width: 0; }
+    .material-toolbar { display: flex; align-items: center; gap: 12px; padding: 15px 18px; background: #fff; border-bottom: 1px solid #e1e6eb; }
+    .material-toolbar h3 { margin: 0; color: var(--pms-cyan); font-size: 20px; }
+    .pending-only-control { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 46px; padding: 10px; color: #26384a; background: #fff; border: 1px solid #dfe4ea; cursor: pointer; }
+    .pending-only-control input { width: 34px; height: 18px; margin: 0; accent-color: var(--pms-cyan); cursor: pointer; }
+    .pending-nav { margin-top: 10px; padding: 4px 0; background: #fff; border: 1px solid #dfe4ea; }
+    .pending-nav-title { padding: 9px 10px 4px; color: var(--pms-cyan); font-size: 12px; font-weight: 700; }
+    .pending-nav button { width: 100%; padding: 7px 10px; color: #344454; background: transparent; border: 0; text-align: left; cursor: pointer; }
+    .pending-nav button:hover, .pending-nav button.active { color: #a43128; background: #fff4f2; }
+    .view-switch { display: inline-flex; border: 1px solid #cfd6de; }
+    .view-switch button { min-height: 30px; padding: 4px 12px; background: #fff; border: 0; border-right: 1px solid #cfd6de; }
+    .view-switch button:last-child { border-right: 0; }
+    .view-switch button.active { color: #fff; background: #647789; }
+    .restart-context { padding: 15px 18px; background: #fafbfc; border-bottom: 1px solid #e2e7ec; }
+    .restart-context h4 { margin: 0 0 10px; }
+    .restart-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
+    .restart-fields { display: grid; gap: 8px; }
+    .restart-line { height: 30px; background: #fff; border: 1px solid #e0e5ea; }
+    .confirm-block { margin: 16px; border: 1px solid #edbeb7; }
+    .confirm-title { padding: 10px 12px; color: #9b2f26; background: #fff4f2; font-weight: 700; }
+    .question { padding: 12px; border-top: 1px solid #efd8d4; }
+    .question:first-of-type { border-top: 0; }
+    .question p { margin: 0 0 9px; }
+    .confirm-answer-title { margin: 12px 0 8px; color: #39495a; font-weight: 700; }
+    .basis-options { display: flex; flex-wrap: wrap; gap: 12px; }
+    .basis-options label { display: inline-flex; align-items: center; gap: 4px; }
+    .reply-upload { margin-top: 9px; }
+    .material-section { padding: 14px 18px 4px; }
+    .material-section h4 { margin: 0 0 12px; font-size: 16px; }
+    .material-grid { display: grid; grid-template-columns: repeat(3, minmax(150px, 1fr)); gap: 14px; }
+    .material-item { position: relative; min-height: 178px; padding: 10px; background: #fff; border: 1px solid transparent; }
+    .material-item.target { border: 2px solid var(--danger); background: #fffafa; }
+    .material-item.suggested { border: 2px solid #65bdd7; background: var(--suggested-soft); }
+    .material-item.optional { display: none; }
+    .material-page.show-all .material-item.optional { display: block; }
+    .material-page:not(.show-all) .material-section.empty-pending { display: none; }
+    .target-label { position: absolute; top: -10px; right: 8px; padding: 2px 7px; color: #fff; background: var(--danger); font-size: 11px; }
+    .target-label.suggested-label { background: var(--suggested); }
+    .material-preview { width: 100%; height: 108px; display: grid; place-items: center; margin-bottom: 8px; padding: 0; color: #657383; background: #f5f6f7; border: 1px solid #edf0f2; font: inherit; font-size: 13px; cursor: pointer; }
+    .material-preview:hover, .material-preview:focus-visible { color: #2f8eb6; border-color: #65bdd7; outline: none; }
+    .material-name { min-height: 34px; font-weight: 700; }
+    .issue-note { min-height: 32px; margin: 5px 0 8px; color: #8b3f38; font-size: 12px; }
+    .problem-evidence { display: inline-flex; align-items: center; margin: 0 0 8px; padding: 0; color: #2f8eb6; background: transparent; border: 0; font-size: 12px; }
+    .problem-inline { position: relative; width: 180px; height: 104px; display: grid; place-items: center; margin: 8px 0 12px; color: #7a4b45; background: #eef1f4; border: 1px solid #d9dee4; font-size: 12px; overflow: hidden; }
+    .problem-inline::before { content: "质检问题图片"; }
+    .problem-inline::after { content: "问题区域"; position: absolute; inset: 22px 34px; display: grid; place-items: center; color: #c8342f; background: rgba(255,255,255,.64); border: 2px solid #d84b43; font-weight: 700; }
+    .model-type-options { display: flex; align-items: center; gap: 18px; margin: 4px 0 16px; }
+    .model-type-options label { display: inline-flex; align-items: center; gap: 5px; }
+    .model-upload-list { display: grid; gap: 12px; }
+    .model-upload-item { min-height: 0; padding: 0 0 12px; border-bottom: 1px solid #edf0f3; }
+    .model-upload-item.target, .model-upload-item.suggested { padding: 10px; }
+    .model-upload-line { display: grid; grid-template-columns: 76px minmax(260px, 1fr) 184px minmax(150px, .8fr); gap: 10px; align-items: center; }
+    .model-upload-line .fake-file-input { height: 34px; display: flex; align-items: center; padding: 0 12px; color: #abb2ba; background: #fff; border: 1px solid #d4d9df; }
+    .model-upload-line .drag-tip { color: #667085; font-size: 12px; }
+    .model-qc-note { margin: 9px 0 0 86px; color: #8b3f38; font-size: 12px; }
+    .history-round-summary { display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px; padding: 12px 14px; color: #344054; background: #f7f9fb; border: 1px solid #dfe4ea; }
+    .history-round-summary strong { color: #1f2937; }
+    .history-event { position: relative; margin-left: 16px; padding: 12px 14px 12px 18px; border: 1px solid #dfe4ea; background: #fff; }
+    .history-event + .history-event { margin-top: 12px; }
+    .history-event::before { content: ""; position: absolute; left: -23px; top: 18px; width: 10px; height: 10px; background: #fff; border: 2px solid #45b9d7; border-radius: 50%; }
+    .history-event::after { content: ""; position: absolute; left: -18px; top: 30px; bottom: -14px; width: 2px; background: #b9deea; }
+    .history-event:last-child::after { display: none; }
+    .history-event-head { display: grid; grid-template-columns: minmax(130px, .8fr) minmax(180px, 1fr) minmax(160px, .9fr); gap: 12px 20px; align-items: center; }
+    .history-event-head strong { color: #1f2937; }
+    .history-event-actor { color: #4b5563; font-weight: 600; }
+    .history-event-time { color: #667085; white-space: nowrap; }
+    .history-detail { margin-top: 10px; padding-top: 9px; color: #344054; border-top: 1px dashed #dfe4ea; line-height: 1.7; }
+    .history-detail-line + .history-detail-line { margin-top: 4px; }
+    .history-attachments { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .history-image-thumb { width: 108px; height: 66px; display: grid; place-items: center; padding: 6px; color: #2f7f9f; background: #eef6f9; border: 1px solid #b8d8e3; font-size: 12px; cursor: pointer; }
+    .history-image-thumb:hover { border-color: #45b9d7; background: #e5f4f8; }
+    .history-preview { min-height: 360px; display: grid; place-items: center; color: #667085; background: #eef1f4; border: 1px solid #d9dee4; }
+    .history-preview-box { width: 280px; height: 180px; display: grid; place-items: center; color: #c8342f; background: rgba(255,255,255,.72); border: 3px solid #d84b43; font-weight: 700; }
+    .item-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .item-actions button { min-height: 27px; padding: 3px 8px; }
+    .item-complete { color: var(--success); font-size: 12px; }
+    .feedback-tooltip { position: relative; width: 260px; max-width: 260px; }
+    .feedback-clamp { display: -webkit-box; overflow: hidden; color: #344054; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .feedback-tooltip:hover::after { content: attr(data-full); position: absolute; z-index: 80; left: 0; top: calc(100% + 6px); width: 360px; padding: 8px 10px; color: #fff; background: #2f3338; border-radius: 3px; box-shadow: 0 6px 18px rgba(0,0,0,.22); line-height: 1.55; white-space: normal; }
+    .material-foot { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 12px; background: rgba(255,255,255,.97); border-top: 1px solid #dfe4ea; }
+    .submission-note { margin-right: auto; color: #667085; font-size: 12px; }
+
+    .timeline { padding: 18px; background: #fff; border: 1px solid #dfe4ea; }
+    .timeline h3 { margin: 0 0 18px; }
+    .timeline-row { display: grid; grid-template-columns: 155px 22px minmax(0, 1fr) 108px; min-height: 62px; }
+    .timeline-time { color: #667085; text-align: right; padding-right: 14px; }
+    .timeline-line { position: relative; border-left: 2px solid #63c5df; }
+    .timeline-line::before { content: ""; position: absolute; top: 3px; left: -7px; width: 10px; height: 10px; background: #fff; border: 2px solid #41b9d8; border-radius: 50%; }
+    .timeline-text { padding-left: 14px; font-weight: 700; }
+    .timeline-text small { display: block; margin-top: 5px; color: #667085; font-weight: 400; }
+    .timeline-action { display: flex; align-items: flex-start; justify-content: flex-end; padding-left: 10px; }
+    .timeline-action .btn { min-width: 76px; }
+
+    /* Overview and outcome */
+    .overview { min-width: 980px; background: #fff; border: 1px solid #d5dce3; box-shadow: var(--shadow); }
+    .overview-head { padding: 18px 20px; border-bottom: 1px solid #e0e5ea; }
+    .overview-head h2 { margin: 0 0 5px; font-size: 19px; }
+    .swimlane-wrap { overflow-x: auto; padding: 16px; background: #f7f9fb; }
+    .swimlane-board { position: relative; width: 1500px; height: 865px; background: #fff; border: 1px solid #cfd7df; }
+    .swimlane-board svg { width: 100%; height: 100%; display: block; }
+    .swim-role { fill: #26384b; font-size: 16px; font-weight: 700; text-anchor: middle; }
+    .swim-system { fill: #26384b; font-size: 16px; font-weight: 700; text-anchor: middle; }
+    .swim-axis-note { fill: #667085; font-size: 12px; text-anchor: middle; }
+    .swim-grid { stroke: #d7dee6; stroke-width: 1; }
+    .swim-system-band { fill: #f5f7f9; }
+    .swim-role-band { fill: #fbfcfd; }
+    .swim-node { fill: #fff; stroke: #9aa8b6; stroke-width: 1.2; rx: 4; }
+    .swim-node.changed-node { fill: #fff7f6; stroke: #df6a61; }
+    .swim-node.existing-node { fill: #f3f4f6; stroke: #a7afb8; }
+    .swim-node.result-node { fill: #f0f8f4; stroke: #67a984; }
+    .swim-step { fill: #fff; stroke: #d7443e; stroke-width: 1.5; }
+    .swim-step.existing-step { stroke: #7d8791; }
+    .swim-step-text { fill: #d7443e; font-size: 12px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    .swim-step-text.existing-step-text { fill: #667085; }
+    .swim-title { fill: #1f2937; font-size: 13px; font-weight: 700; }
+    .swim-copy { fill: #5d6978; font-size: 11px; }
+    .swim-arrow { fill: none; stroke: #65788b; stroke-width: 1.7; marker-end: url(#swim-arrow); }
+    .swim-arrow.branch { stroke: #b66b37; stroke-dasharray: 5 4; }
+    .swim-branch-label { fill: #9b5a2d; font-size: 11px; font-weight: 700; }
+    .swim-phase { fill: #eef7fb; stroke: #a9d4e2; }
+    .swim-phase-text { fill: #2d7f9e; font-size: 12px; font-weight: 700; text-anchor: middle; }
+    .scenario-actions { display: flex; flex-wrap: wrap; gap: 10px; padding: 18px; }
+    .outcome-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+    .outcome-card { padding: 14px; background: #fff; border: 1px solid #d8dfe6; }
+    .outcome-card.active { border: 2px solid var(--danger); }
+    .outcome-card h3 { margin: 0 0 8px; font-size: 15px; }
+    .result-panel { padding: 18px; background: #fff; border: 1px solid #d8dfe6; }
+    .result-path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+    .result-step { min-height: 80px; padding: 12px; background: #f7f9fb; border: 1px solid #dfe4ea; }
+    .result-step strong, .result-step span { display: block; }
+    .result-step span { margin-top: 5px; color: #667085; font-size: 12px; }
+
+    @media (max-width: 900px) {
+      .prototype { display: block; }
+      .scene-nav { position: sticky; z-index: 60; top: 0; width: 100%; height: auto; display: flex; overflow-x: auto; border-right: 0; border-bottom: 1px solid #1a2939; }
+      .nav-brand { min-width: 190px; height: 50px; padding: 9px 12px; }
+      .nav-group { display: none; }
+      .material-page { grid-template-columns: 1fr; }
+      .material-sidebar { position: static; min-height: 0; border-right: 0; border-bottom: 1px solid #dfe4ea; }
+      .pending-nav { display: flex; flex-wrap: wrap; gap: 4px; }
+      .pending-nav-title { width: 100%; }
+      .pending-nav button { width: auto; }
+      .material-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+      .scene-link { min-width: 140px; min-height: 50px; margin: 0; border-left: 0; border-bottom: 3px solid transparent; }
+      .scene-link.active { border-bottom-color: #5fc3df; border-left-color: transparent; }
+      .scene-index { display: none; }
+      .demo-topbar { min-height: 56px; padding: 8px 12px; }
+      .demo-title p, .role-tag { display: none; }
+      .canvas { padding: 8px; }
+      .mes-app, .pms-app, .overview { min-width: 960px; }
+      .modal-layer { align-items: flex-start; padding: 8px; overflow: auto; }
+    }
+  </style>
+</head>
+<body>
+<div class="prototype">
+  <aside class="scene-nav" aria-label="原型场景">
+    <div class="nav-brand">模型初检医生协同<span class="nav-version">交互原型 v2.6</span></div>
+    <div class="nav-group">总览</div>
+    <button class="scene-link active" data-scene="overview"><span class="scene-index">01</span>完整业务流转</button>
+    <div class="nav-group">MES 质检 / 客服</div>
+    <button class="scene-link" data-scene="mes-list"><span class="scene-index">02</span>模型初检列表</button>
+    <button class="scene-link" data-scene="mes-init"><span class="scene-index">03</span>发起医生协同</button>
+    <button class="scene-link" data-scene="mes-collab"><span class="scene-index">04</span>医生协同工作台</button>
+    <button class="scene-link" data-scene="mes-hung"><span class="scene-index">05</span>已挂起列表</button>
+    <button class="scene-link" data-scene="cs-proxy"><span class="scene-index">06</span>客服代录</button>
+    <button class="scene-link" data-scene="mes-detail"><span class="scene-index">07</span>详情留痕</button>
+    <div class="nav-group">PMS 医生</div>
+    <button class="scene-link" data-scene="pms-workbench"><span class="scene-index">08</span>登录提醒与工作台</button>
+    <button class="scene-link" data-scene="pms-confirm"><span class="scene-index">09</span>仅确认场景</button>
+    <button class="scene-link" data-scene="pms-material" data-order-type="first"><span class="scene-index">10</span>首次资料页</button>
+    <button class="scene-link" data-scene="pms-material" data-order-type="restart"><span class="scene-index">11</span>重启/售后资料页</button>
+    <button class="scene-link" data-scene="pms-timeline"><span class="scene-index">12</span>时间轴</button>
+    <div class="nav-group">结果</div>
+    <button class="scene-link" data-scene="outcome"><span class="scene-index">13</span>结果落定</button>
+  </aside>
+
+  <main class="demo-main">
+    <header class="demo-topbar">
+      <div class="demo-title">
+        <h1 id="scene-title">完整业务流转</h1>
+        <p id="scene-subtitle">MES 发起一张协同单，PMS 或客服一次处理，按资料更新情况回流。</p>
+      </div>
+      <div class="top-actions">
+        <span class="role-tag" id="role-tag">跨系统</span>
+        <button class="btn small" id="reset-demo">重置演示</button>
+      </div>
+    </header>
+
+    <section class="scene active" id="overview">
+      <div class="canvas">
+        <div class="overview">
+          <div class="overview-head">
+            <h2>模型初检医生协同角色 × 系统泳道</h2>
+            <span class="existing">角色横向固定、系统纵向固定；序号与连线表示完整时序，[已有] 表示复用现有能力</span>
+          </div>
+          <div class="swimlane-wrap">
+            <div class="swimlane-board" aria-label="模型初检医生协同泳道图">
+              <svg viewBox="0 0 1500 865" role="img" aria-labelledby="swim-title swim-desc">
+                <title id="swim-title">模型初检医生协同角色与系统泳道图</title>
+                <desc id="swim-desc">横轴为质检、医生、客服和销售，纵轴为MES、PMS和企微，序号和箭头表示协同时序与结果分支。</desc>
+                <defs>
+                  <marker id="swim-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#65788b"/></marker>
+                </defs>
+
+                <rect x="0" y="0" width="1500" height="865" fill="#fff"/>
+                <rect class="swim-system-band" x="0" y="58" width="120" height="520"/>
+                <rect class="swim-system-band" x="0" y="578" width="120" height="165"/>
+                <rect class="swim-system-band" x="0" y="743" width="120" height="122"/>
+                <rect class="swim-role-band" x="120" y="58" width="345" height="807"/>
+                <rect class="swim-role-band" x="810" y="58" width="345" height="807"/>
+                <line class="swim-grid" x1="120" y1="0" x2="120" y2="865"/>
+                <line class="swim-grid" x1="465" y1="0" x2="465" y2="865"/>
+                <line class="swim-grid" x1="810" y1="0" x2="810" y2="865"/>
+                <line class="swim-grid" x1="1155" y1="0" x2="1155" y2="865"/>
+                <line class="swim-grid" x1="0" y1="58" x2="1500" y2="58"/>
+                <line class="swim-grid" x1="0" y1="578" x2="1500" y2="578"/>
+                <line class="swim-grid" x1="0" y1="743" x2="1500" y2="743"/>
+
+                <text class="swim-system" x="60" y="31">系统</text>
+                <text class="swim-axis-note" x="60" y="48">序号为时序</text>
+                <text class="swim-role" x="292" y="35">质检</text>
+                <text class="swim-role" x="637" y="35">医生</text>
+                <text class="swim-role" x="982" y="35">客服</text>
+                <text class="swim-role" x="1327" y="35">销售（仅接收通知）</text>
+                <text class="swim-system" x="60" y="320">MES</text>
+                <text class="swim-system" x="60" y="668">PMS</text>
+                <text class="swim-system" x="60" y="808">企微</text>
+
+                <rect class="swim-phase" x="136" y="72" width="312" height="26" rx="3"/><text class="swim-phase-text" x="292" y="90">发起与等待</text>
+                <rect class="swim-phase" x="481" y="72" width="658" height="26" rx="3"/><text class="swim-phase-text" x="810" y="90">医生线上提交 / 客服线下代录（二选一，首次成功生效）</text>
+                <rect class="swim-phase" x="1168" y="72" width="316" height="26" rx="3"/><text class="swim-phase-text" x="1326" y="90">通知跟进</text>
+
+                <g transform="translate(145 116)"><rect class="swim-node existing-node" width="296" height="58"/><circle class="swim-step existing-step" cx="20" cy="20" r="13"/><text class="swim-step-text existing-step-text" x="20" y="20">1</text><text class="swim-title" x="42" y="22">[已有] 打开模型初检待处理任务</text><text class="swim-copy" x="42" y="42">判断是否需要医生完善资料或确认</text></g>
+                <g transform="translate(145 196)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">2</text><text class="swim-title" x="42" y="22">发起医生协同</text><text class="swim-copy" x="42" y="42">资料需完善和医生需确认可同时选择</text><text class="swim-copy" x="42" y="56">生成一张有效协同单</text></g>
+                <g transform="translate(145 284)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">3</text><text class="swim-title" x="42" y="22">源任务挂起，协同待反馈</text><text class="swim-copy" x="42" y="42">生成PMS待办并暂停模型初检时限</text><text class="swim-copy" x="42" y="56">操作信息生成一轮协同记录</text></g>
+                <g transform="translate(145 382)"><rect class="swim-node changed-node" width="296" height="82"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5A</text><text class="swim-title" x="42" y="22">等待期间管理协同</text><text class="swim-copy" x="42" y="42">追加：更新同一待办并保留医生草稿</text><text class="swim-copy" x="42" y="57">重新分配：更新当前处理人</text><text class="swim-copy" x="42" y="72">撤回：关闭待办并恢复待处理</text></g>
+                <g transform="translate(145 484)"><rect class="swim-node result-node" width="996" height="76"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">8</text><text class="swim-title" x="42" y="22">MES 接收首次成功提交，协同转已反馈并落定结果</text><text class="swim-copy" x="42" y="43">模型更新 → 质检不通过 + [已有]工序重置；仅照片/CT更新 → 质检不通过 + [已有]资料重提</text><text class="swim-copy" x="42" y="61">仅确认 → 源任务恢复待处理；未更新待完善模型且医生同意继续 → 按既定分支映射[已有]让步接收</text></g>
+
+                <g transform="translate(490 590)"><rect class="swim-node changed-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5B</text><text class="swim-title" x="42" y="20">点击修改并处理全部有效事项</text><text class="swim-copy" x="42" y="38">确认问题、更新正式资料或确认继续使用模型</text></g>
+                <g transform="translate(490 646)"><rect class="swim-node changed-node" width="296" height="42"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6B</text><text class="swim-title" x="42" y="20">医生提交</text><text class="swim-copy" x="150" y="20">回传回复、资料变化和回复图片</text></g>
+                <g transform="translate(490 696)"><rect class="swim-node" width="296" height="38"/><circle class="swim-step" cx="20" cy="19" r="13"/><text class="swim-step-text" x="20" y="19">9A</text><text class="swim-title" x="42" y="18">关闭待办并更新时间轴</text><text class="swim-copy" x="174" y="18">移除操作入口</text></g>
+                <g transform="translate(490 756)"><rect class="swim-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">4A</text><text class="swim-title" x="42" y="20">收到企微待完善提醒</text><text class="swim-copy" x="42" y="38">按指引进入工作台待完善病例</text></g>
+
+                <g transform="translate(835 382)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6C</text><text class="swim-title" x="42" y="22">客服代录</text><text class="swim-copy" x="42" y="42">复用医生表单录入反馈和资料</text><text class="swim-copy" x="42" y="56">上传沟通截图并提交</text></g>
+                <g transform="translate(835 756)"><rect class="swim-node" width="296" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5C</text><text class="swim-title" x="42" y="20">通过企微线下收到医生反馈</text><text class="swim-copy" x="42" y="38">由客户体验部成员进入 MES 代录</text></g>
+
+                <g transform="translate(1180 750)"><rect class="swim-node" width="296" height="46"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">4B</text><text class="swim-title" x="42" y="20">收到首次协同跟进通知</text><text class="swim-copy" x="42" y="37">协助关注医生处理进度</text></g>
+                <g transform="translate(1180 808)"><rect class="swim-node" width="296" height="46"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">9B</text><text class="swim-title" x="42" y="20">收到待完善事项完成通知</text><text class="swim-copy" x="42" y="37">按既定通知规则发送</text></g>
+
+                <path class="swim-arrow" d="M293 174 L293 196"/><path class="swim-arrow" d="M293 262 L293 284"/>
+                <path class="swim-arrow branch" d="M441 317 H465 V780 H490"/><text class="swim-branch-label" x="470" y="340">线上提醒</text>
+                <path class="swim-arrow branch" d="M441 328 H810 V780 H835"/><text class="swim-branch-label" x="690" y="350">线下反馈</text>
+                <path class="swim-arrow" d="M637 756 L637 638"/><path class="swim-arrow" d="M637 638 L637 646"/><path class="swim-arrow" d="M982 756 L982 448"/>
+                <path class="swim-arrow" d="M293 350 L293 382"/><path class="swim-arrow branch" d="M293 464 L293 484"/><text class="swim-branch-label" x="305" y="478">撤回</text>
+                <path class="swim-arrow" d="M637 646 V560"/><path class="swim-arrow" d="M982 448 V484"/>
+                <path class="swim-arrow" d="M441 339 H1155 V773 H1180"/>
+                <path class="swim-arrow" d="M637 560 V696"/><path class="swim-arrow" d="M1138 522 H1160 V831 H1180"/>
+              </svg>
+            </div>
+          </div>
+          <div class="scenario-actions">
+            <button class="btn primary" data-go="mes-init">从质检发起开始</button>
+            <button class="btn" data-go="pms-workbench">查看医生待办</button>
+            <button class="btn" data-go="outcome">查看结果分支</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="mes-list">
+      <div class="canvas">
+        <div class="mes-app">
+          <aside class="mes-side">
+            <div class="mes-logo">悦见生产管理系统</div>
+            <div class="mes-menu-title">质检中心</div>
+            <div class="mes-menu active">模型初检</div>
+            <div class="mes-menu">过程质检</div>
+            <div class="mes-menu">成品质检</div>
+            <div class="mes-menu">复核检验</div>
+            <div class="mes-menu-title">设计中心</div>
+            <div class="mes-menu">方案设计</div>
+          </aside>
+          <div class="mes-content">
+            <div class="mes-breadcrumb">首页 / 质检中心 / 模型初检</div>
+            <div class="mes-tabstrip"><span class="window-tab">订单管理 ×</span><span class="window-tab current">● 模型初检 ×</span></div>
+            <div class="filters">
+              <label class="filter-field"><span>患者姓名</span><input class="input" id="pending-patient-filter" placeholder="患者姓名、门诊名称"></label>
+              <label class="filter-field"><span>处方号</span><input class="input" id="pending-prescription-filter" placeholder="请输入处方号"></label>
+              <label class="filter-field"><span>订单号码</span><input class="input" id="pending-order-filter" placeholder="请输入订单号码"></label>
+              <label class="filter-field"><span>是否加急</span><select class="select"><option>全部</option></select></label>
+              <label class="filter-field"><span>所属门诊</span><select class="select"><option>请选择所属门诊</option></select></label>
+              <label class="filter-field"><span>生产工厂</span><select class="select"><option>全部</option></select></label>
+              <label class="filter-field"><span>处理人</span><input class="input" id="pending-handler-filter" placeholder="请输入处理人"></label>
+              <label class="filter-field changed"><span>协同状态</span><select class="select changed" id="pending-collab-filter"><option value="all">全部</option><option value="none">未发起（-）</option><option value="feedback">已反馈</option><option value="withdrawn">已撤回</option></select></label>
+              <div class="filters-actions"><button class="btn small" id="pending-filter-reset">重置</button><button class="btn primary small" id="pending-filter-query">查询</button></div>
+            </div>
+            <div class="qc-tabs">
+              <button class="qc-tab">全部订单</button><button class="qc-tab">待分配</button><button class="qc-tab active">待处理</button>
+              <button class="qc-tab changed" data-go="mes-collab">医生协同<span class="change-badge">新增</span></button>
+              <button class="qc-tab">质检不通过</button><button class="qc-tab">质检通过</button><button class="qc-tab" data-go="mes-hung">已挂起</button><button class="qc-tab">已终止</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data">
+                <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>处理人</th><th>质检状态</th><th class="changed">协同状态</th><th class="changed">协同反馈内容</th><th>操作</th></tr></thead>
+                <tbody id="mes-pending-body">
+                  <tr id="restored-pending-row" data-collab-status="none" data-source-active="1" data-original-handler="张吴秀"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td class="pending-handler" id="restored-handler">张吴秀</td><td>待处理</td><td><span class="changed pending-collab-status" id="restored-collab-status">-</span></td><td><div class="feedback-tooltip changed restored-feedback-tooltip" data-full="-"><span class="feedback-clamp restored-feedback-content">-</span></div></td><td class="table-actions"><button class="btn text small pending-detail" data-current-order="1">详情</button><button class="btn text small pending-reassign">重新分配</button><button class="btn text small pending-hang">挂起</button><button class="btn text small pending-void">作废</button></td></tr>
+                  <tr id="pending-row-0806" data-collab-status="none" data-source-active="1" data-original-handler="王晨豪"><td>P2026080600187</td><td>LS01P2026080600187</td><td>悦见示范诊所</td><td>李医生</td><td>0806案例B</td><td>重启</td><td>阶段3</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-06 16:21:05</td><td class="pending-handler">王晨豪</td><td>待处理</td><td><span class="changed pending-collab-status">-</span></td><td><div class="feedback-tooltip changed" data-full="-"><span class="feedback-clamp">-</span></div></td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small pending-reassign">重新分配</button><button class="btn text small pending-hang">挂起</button><button class="btn text small pending-void">作废</button></td></tr>
+                  <tr id="pending-row-0804" data-collab-status="feedback" data-source-active="1" data-original-handler="王晨豪"><td>P2026080400136</td><td>LS01P2026080400136</td><td>悦见示范诊所</td><td>王医生</td><td>0804案例D</td><td>重启</td><td>阶段2</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-04 11:16:43</td><td class="pending-handler">王晨豪</td><td>待处理</td><td><span class="changed pending-collab-status">已反馈</span></td><td><div class="feedback-tooltip changed" data-full="确认：其他，按患者现有咬合关系设计 (质检发起：请确认后续设计资料依据)"><span class="feedback-clamp">确认：其他，按患者现有咬合关系设计 (质检发起：请确认后续设计资料依据)</span></div></td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small pending-reassign">重新分配</button><button class="btn text small pending-hang">挂起</button><button class="btn text small pending-void">作废</button></td></tr>
+                  <tr class="pending-filter-empty" id="pending-filter-empty"><td colspan="15">暂无符合当前协同状态的订单</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mes-pagination">共 <span id="pending-result-count">3</span> 条　20条/页　‹　1　›</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="mes-init">
+      <div class="canvas">
+        <div class="mes-app">
+          <aside class="mes-side"><div class="mes-logo">悦见生产管理系统</div><div class="mes-menu-title">质检中心</div><div class="mes-menu active">模型初检</div><div class="mes-menu">过程质检</div><div class="mes-menu">成品质检</div></aside>
+          <div class="mes-content">
+            <div class="mes-breadcrumb">首页 / 质检中心 / 模型初检 / 处理</div>
+            <div class="detail-body">
+              <div class="detail-head"><h2>模型初检处理</h2><button class="btn" data-go="mes-list">返回列表</button></div>
+              <div class="info-grid"><div><span>订单号：</span>LS01P2026080700201</div><div><span>订单类型：</span>首次</div><div><span>医生：</span>悦见测试</div><div><span>患者：</span>0807案例A</div><div><span>模型类型：</span>口扫模型</div><div><span>处理人：</span>张吴秀</div><div><span>提交质检日期：</span>2026-08-07 09:32:18</div><div><span>质检状态：</span>待处理</div></div>
+              <div class="qc-box">
+                <h3>质检结果</h3>
+                <div class="result-radios">
+                  <label><input type="radio" name="qc-result" value="质检通过"> 质检通过</label>
+                  <label><input type="radio" name="qc-result" value="质检不通过"> 质检不通过</label>
+                  <label><input type="radio" name="qc-result" value="让步接收"> 让步接收</label>
+                  <label class="changed"><input id="result-collab" type="radio" name="qc-result" value="发起医生协同" checked> 发起医生协同 <span class="change-badge">新增</span></label>
+                </div>
+                <div class="collab-editor" id="collab-editor">
+                  <div class="module-selector changed">
+                    <strong>协同事项（可多选）</strong>
+                    <label class="module-choice"><input type="checkbox" id="enable-material"> 资料需完善</label>
+                    <label class="module-choice"><input type="checkbox" id="enable-confirm"> 医生需确认</label>
+                  </div>
+                  <div class="editor-section module-hidden" id="material-editor-section">
+                    <h4><span class="changed">资料需完善定位（可跨类别多选）</span></h4>
+                    <div class="structured-materials">
+                      <div class="location-row"><span class="location-index">1</span><span class="location-title">面像照</span><div class="location-content"><div class="location-options"><label class="location-option"><input class="material-location" type="checkbox" data-category="面像照" value="正面像">正面像</label><label class="location-option"><input class="material-location" type="checkbox" data-category="面像照" value="正面微笑像">正面微笑像</label><label class="location-option"><input class="material-location" type="checkbox" data-category="面像照" value="侧面像">侧面像</label><label class="location-option"><input class="material-location" type="checkbox" data-category="面像照" value="45度像">45度像</label></div><div class="material-inline-editors"></div></div></div>
+                      <div class="location-row"><span class="location-index">2</span><span class="location-title">口内照</span><div class="location-content"><div class="location-options"><label class="location-option"><input class="material-location" type="checkbox" data-category="口内照" value="口内右侧位像">口内右侧位像</label><label class="location-option"><input class="material-location" type="checkbox" data-category="口内照" value="口内正位像">口内正位像</label><label class="location-option"><input class="material-location" type="checkbox" data-category="口内照" value="口内左侧位像">口内左侧位像</label><label class="location-option"><input class="material-location" type="checkbox" data-category="口内照" value="上牙列像">上牙列像</label><label class="location-option"><input class="material-location" type="checkbox" data-category="口内照" value="下牙列像">下牙列像</label><label class="location-option"><input class="material-location" type="checkbox" data-category="口内照" value="覆颌覆盖像">覆颌覆盖像</label></div><div class="material-inline-editors"></div></div></div>
+                      <div class="location-row"><span class="location-index">3</span><span class="location-title">X 光片 / CT</span><div class="location-content"><div class="location-options"><label class="location-option"><input class="material-location" type="checkbox" data-category="X光片/CT" value="全颌曲面断层片">全颌曲面断层片</label><label class="location-option"><input class="material-location" type="checkbox" data-category="X光片/CT" value="头颅侧位定位片">头颅侧位定位片</label><label class="location-option"><input class="material-location" type="checkbox" data-category="X光片/CT" value="CBCT">CBCT</label></div><div class="material-inline-editors"></div></div></div>
+                      <div class="location-row"><span class="location-index">4</span><span class="location-title">牙颌数据模型</span><div class="location-content"><div class="location-options"><label class="location-option"><input class="material-location" type="checkbox" data-category="牙颌数据模型" value="上颌模型">上颌模型</label><label class="location-option"><input class="material-location" type="checkbox" data-category="牙颌数据模型" value="下颌模型">下颌模型</label></div><div class="material-inline-editors"></div></div></div>
+                    </div>
+                  </div>
+                  <div class="editor-section module-hidden" id="confirm-editor-section">
+                    <h4><span class="changed">医生需确认</span></h4>
+                    <div id="confirm-rows">
+                      <div class="confirm-row confirm-editor-row">
+                        <div class="rich-editor"><div class="rich-toolbar">B　I　U　字体　字号　列表　链接<button class="upload-problem" type="button">插入问题图片</button></div><textarea class="textarea confirm-question" placeholder="请输入需要医生确认的内容，文字必填，图片不能替代文字说明"></textarea></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="init-error" class="error">请至少选择一种协同事项，并完成已选择模块的必填内容。</div>
+                </div>
+                <div class="sticky-actions"><button class="btn" data-go="mes-list">取消</button><button class="btn primary" id="save-collab">保存</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="mes-collab">
+      <div class="canvas">
+        <div class="mes-app">
+          <aside class="mes-side"><div class="mes-logo">悦见生产管理系统</div><div class="mes-menu-title">质检中心</div><div class="mes-menu active">模型初检</div><div class="mes-menu">过程质检</div><div class="mes-menu">成品质检</div></aside>
+          <div class="mes-content">
+            <div class="mes-breadcrumb">首页 / 质检中心 / 模型初检</div>
+            <div class="mes-tabstrip"><span class="window-tab current">● 模型初检 ×</span></div>
+            <div class="filters">
+              <label class="filter-field"><span>医生/客户</span><input class="input" placeholder="请输入医生或客户"></label>
+              <label class="filter-field"><span>订单号码</span><input class="input" placeholder="请输入订单号码"></label>
+              <label class="filter-field"><span>处理人</span><input class="input" placeholder="请输入处理人"></label>
+              <label class="filter-field changed"><span>协同状态</span><select class="select" id="collab-status-filter"><option value="all">全部</option><option value="待反馈">待反馈</option><option value="已反馈">已反馈</option><option value="已撤回">已撤回</option></select></label>
+              <label class="filter-field"><span>发起时间</span><input class="input" value="2026-08-01 - 2026-08-07"></label>
+              <div></div><div></div><div class="filters-actions"><button class="btn small" id="collab-filter-reset">重置</button><button class="btn primary small" id="collab-filter-query">查询</button></div>
+            </div>
+            <div class="qc-tabs">
+              <button class="qc-tab">全部订单</button><button class="qc-tab">待分配</button><button class="qc-tab">待处理</button>
+              <button class="qc-tab active changed">医生协同<span class="change-badge">新增</span></button>
+              <button class="qc-tab">质检不通过</button><button class="qc-tab">质检通过</button><button class="qc-tab" data-go="mes-hung">已挂起</button><button class="qc-tab">已终止</button>
+            </div>
+            <div class="permission-context">当前登录人：<strong id="current-user-label">张吴秀</strong>。操作入口均可见；追加/撤回仅当前处理人可用，重新分配仅当前处理人或模型处理中心成员可用，代录仅客户体验部当前有效成员可用。</div>
+            <div class="table-wrap">
+              <table class="data">
+                <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th class="changed">协同状态</th><th class="changed">事项摘要</th><th class="changed">协同反馈内容</th><th class="changed">发起时间</th><th class="changed">反馈时间</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>预计出方案日期</th><th>设计加急</th><th>当前处理人</th><th>任务类型</th><th>质检状态</th><th>操作</th></tr></thead>
+                <tbody id="collab-body">
+                  <tr id="collab-row" data-collab-state="未发起" data-collab-active="0" style="display:none"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td><span class="status current changed" id="collab-status">待反馈</span></td><td class="changed" id="collab-summary">资料 2 项，确认 1 项</td><td><div class="feedback-tooltip changed" id="collab-feedback-tooltip" data-full="-"><span class="feedback-clamp" id="collab-feedback-content">-</span></div></td><td class="changed">2026-08-07 10:06:20</td><td class="changed" id="collab-feedback-time">-</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td>2026-08-10 17:30:00</td><td>否</td><td id="handler-cell">张吴秀</td><td>新病例</td><td id="collab-qc-status">已挂起</td><td><div class="table-actions" id="collab-actions"></div></td></tr>
+                  <tr data-collab-state="已反馈"><td>P2026080500128</td><td>LS01P2026080500128</td><td>悦见示范诊所</td><td>李医生</td><td>0805案例C</td><td><span class="status changed">已反馈</span></td><td class="changed">确认 1 项</td><td><div class="feedback-tooltip changed" data-full="确认：以口扫为准 (质检发起：请确认后续设计资料依据)"><span class="feedback-clamp">确认：以口扫为准 (质检发起：请确认后续设计资料依据)</span></div></td><td class="changed">2026-08-05 13:18:44</td><td class="changed">2026-08-05 15:07:12</td><td>重启</td><td>阶段3</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-05 12:42:09</td><td>2026-08-08 18:00:00</td><td>否</td><td>王晨豪</td><td>新病例</td><td>待处理</td><td><button class="btn text small">详情</button></td></tr>
+                  <tr class="pending-filter-empty" id="collab-filter-empty"><td colspan="21">暂无符合当前协同状态的记录</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mes-pagination">共 <span id="collab-result-count">1</span> 条　20条/页　‹　1　›</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="mes-hung">
+      <div class="canvas">
+        <div class="mes-app">
+          <aside class="mes-side"><div class="mes-logo">悦见生产管理系统</div><div class="mes-menu-title">质检中心</div><div class="mes-menu active">模型初检</div><div class="mes-menu">过程质检</div><div class="mes-menu">成品质检</div></aside>
+          <div class="mes-content">
+            <div class="mes-breadcrumb">首页 / 质检中心 / 模型初检</div>
+            <div class="mes-tabstrip"><span class="window-tab current">● 模型初检 ×</span></div>
+            <div class="filters">
+              <label class="filter-field"><span>患者姓名</span><input class="input" placeholder="请输入患者姓名"></label>
+              <label class="filter-field"><span>处方号</span><input class="input" placeholder="请输入处方号"></label>
+              <label class="filter-field"><span>订单号码</span><input class="input" placeholder="请输入订单号码"></label>
+              <label class="filter-field"><span>处理人</span><input class="input" placeholder="请输入处理人"></label>
+              <div></div><div></div><div class="filters-actions"><button class="btn small">重置</button><button class="btn primary small">查询</button></div>
+            </div>
+            <div class="qc-tabs">
+              <button class="qc-tab">全部订单</button><button class="qc-tab">待分配</button><button class="qc-tab" data-go="mes-list">待处理</button>
+              <button class="qc-tab changed" data-go="mes-collab">医生协同</button><button class="qc-tab">质检不通过</button><button class="qc-tab">质检通过</button><button class="qc-tab active">已挂起</button><button class="qc-tab">已终止</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data">
+                <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>预计出方案日期</th><th>设计加急</th><th>处理人</th><th>任务类型</th><th>质检状态</th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr data-shared-collab="1" data-doctor="悦见测试" data-patient="0807案例A" data-qc-status="已挂起" data-collab-status="待反馈"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td>2026-08-10 17:30:00</td><td>否</td><td class="pending-handler shared-collab-handler">张吴秀</td><td>新病例</td><td>已挂起</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
+                  <tr data-doctor="王医生" data-patient="0803案例E" data-qc-status="已挂起" data-collab-status="-"><td>P2026080300109</td><td>LS01P2026080300109</td><td>悦见示范诊所</td><td>王医生</td><td>0803案例E</td><td>重启</td><td>阶段2</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-03 10:18:26</td><td>2026-08-06 18:00:00</td><td>否</td><td class="pending-handler">王晨豪</td><td>新病例</td><td>已挂起</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="cs-proxy">
+      <div class="canvas">
+        <div class="mes-app">
+          <aside class="mes-side"><div class="mes-logo">悦见生产管理系统</div><div class="mes-menu-title">质检中心</div><div class="mes-menu active">模型初检</div><div class="mes-menu">过程质检</div></aside>
+          <div class="mes-content">
+            <div class="mes-breadcrumb">首页 / 质检中心 / 模型初检 / 医生协同 / 客服代录</div>
+            <div class="detail-body">
+              <div class="detail-head"><h2 class="changed">客服代录医生线下反馈</h2><button class="btn" data-go="mes-collab">返回协同列表</button></div>
+              <div class="info-grid"><div><span>医生：</span>悦见测试</div><div><span>患者：</span>0807案例A</div><div><span>订单：</span>LS01P2026080700201</div><div><span>订单类型：</span>首次</div></div>
+              <div class="material-page" id="proxy-material-page">
+                <aside class="material-sidebar changed">
+                  <label class="pending-only-control"><span>仅展示待完善项</span><input type="checkbox" id="proxy-pending-only-toggle" checked></label>
+                  <nav class="pending-nav" id="proxy-pending-nav" aria-label="代录待完善资料定位"></nav>
+                </aside>
+                <div class="material-main">
+                  <div class="material-toolbar"><h3>影像资料及模型</h3></div>
+                  <div class="confirm-block" id="proxy-confirm-block">
+                    <div class="confirm-title">待确认事项</div>
+                    <div id="proxy-confirm-questions"></div>
+                  </div>
+                  <div id="proxy-material-section"><div id="proxy-material-sections"></div></div>
+                  <div class="editor-section" style="margin:16px 18px 0">
+                    <h4 class="changed">代录留痕</h4>
+                    <label>医生反馈内容（选填）<textarea class="textarea" id="proxy-feedback" placeholder="可填写医生线下反馈内容"></textarea></label>
+                    <div style="margin-top:10px"><span>与医生沟通截图（必填，1～9 张）</span><div style="display:flex;align-items:center;gap:8px;margin-top:7px"><button class="upload-mini" id="add-evidence">点击上传 / 拖拽照片</button><span id="evidence-count">0/9</span></div></div>
+                    <div class="error" id="proxy-error">请完成全部待处理项和确认内容，并至少上传 1 张沟通截图；医生反馈文字可不填写。</div>
+                  </div>
+                  <div class="material-foot"><span class="submission-note">资料处理规则与医生端一致；沟通截图仅用于内部留痕。</span><button class="btn" data-go="mes-collab">取消</button><button class="btn" id="proxy-draft">暂存</button><button class="btn primary" id="submit-proxy">提交</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="mes-detail">
+      <div class="canvas">
+        <div class="mes-app">
+          <aside class="mes-side"><div class="mes-logo">悦见生产管理系统</div><div class="mes-menu-title">质检中心</div><div class="mes-menu active">模型初检</div><div class="mes-menu">过程质检</div></aside>
+          <div class="mes-content">
+            <div class="mes-breadcrumb">首页 / 质检中心 / 模型初检 / 详情</div>
+            <div class="detail-body">
+              <div class="detail-head"><h2>订单详情</h2><button class="btn" data-go="mes-collab">返回</button></div>
+              <div class="qc-tabs" style="padding-left:0"><button class="qc-tab">信息</button><button class="qc-tab active">操作信息</button><button class="qc-tab">专家建议</button></div>
+              <div style="padding:18px 0">
+                <h3 style="font-size:15px">操作信息</h3>
+                <div id="collab-log-empty" style="padding:12px 0;color:#8a95a3">暂无模型初检医生协同记录</div>
+                <div id="collab-hang-log" style="display:none;grid-template-columns:120px 180px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #e1e5ea"><strong>订单挂起：</strong><span>2026-08-07 10:06:20</span><span>模型初检等待医生处理</span></div>
+                <div id="collab-feedback-log" class="changed" style="display:none;grid-template-columns:170px 210px 180px minmax(210px,1fr) 110px;gap:12px;padding:10px 0;border-bottom:1px solid #e1e5ea"><strong>模型初检医生协同：</strong><span>发起时间：<b id="collab-round-start">-</b></span><span>协同状态：<b id="collab-round-status">-</b></span><span>最近更新：<b id="collab-round-latest">-</b></span><button class="btn text small" data-open="history">查看协同记录</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="pms-workbench">
+      <div class="canvas">
+        <div class="pms-app">
+          <div class="pms-top"><div class="pms-logo">悦见 LinkedSmile</div><div class="pms-nav"><span class="active">工作台</span><span>病例列表</span><span>帮助中心</span><span>悦见学园</span></div><div class="pms-search">请输入患者姓名/备注搜...</div></div>
+          <div class="pms-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div>你好～<strong style="font-size:18px">悦见测试</strong> 医生，当前诊所为：上海测试认证客户005</div><button class="btn primary">＋ 新建病例</button></div>
+            <div class="metric-row"><div class="metric"><strong>1283</strong><span>待提交病例</span></div><div class="metric"><strong>209</strong><span>待确认病例</span></div><div class="metric pending"><strong id="pending-metric">29</strong><span>待完善病例</span></div><div class="metric"><strong>4436</strong><span>治疗中病例</span></div><div class="metric"><strong>58</strong><span>已完成病例</span></div></div>
+            <div class="workbench-columns">
+              <div class="workbench-panel"><h2>待确认 方案</h2><div class="case-list"><div class="case-row"><div class="avatar">患</div><div class="case-main"><strong>0711AUTO69g</strong><span>首次　方案待确认</span></div><div>悦见4D</div><div class="case-summary">方案确认</div><button class="case-action">3D动画</button></div></div></div>
+              <div class="workbench-panel"><h2 class="changed">待完善 病例</h2><div class="case-list">
+                <div class="case-row" id="mixed-case-row"><div class="avatar">A</div><div class="case-main"><strong>0807案例A</strong><span>首次　病例资料待完善</span></div><div>悦见·专业版</div><button class="case-action" id="mixed-case-action" data-go="pms-material" data-order-type="first">修改</button></div>
+                <div class="case-row"><div class="avatar">B</div><div class="case-main"><strong>0805案例C</strong><span>重启　病例资料待完善</span></div><div>悦见4D</div><button class="case-action" data-go="pms-confirm">修改</button></div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="pms-confirm">
+      <div class="canvas">
+        <div class="pms-app">
+          <div class="pms-top"><div class="pms-logo">悦见 LinkedSmile</div><div class="pms-nav"><span>工作台</span><span class="active">病例列表</span><span>帮助中心</span><span>悦见学园</span></div><div class="pms-search">请输入患者姓名/备注搜...</div></div>
+          <div class="pms-body">
+            <div class="case-detail">
+              <div class="case-header"><h2>0805案例C</h2><div class="case-meta"><span>医生：悦见测试</span><span>订单类型：重启</span><span>订单号：LS01P2026080500128</span></div></div>
+              <div class="modal" style="margin:0 auto;max-height:none">
+                <div class="modal-head"><span class="changed">完善订单</span><button class="close" data-go="pms-workbench">×</button></div>
+                <div class="modal-body">
+                  <div class="confirm-block" style="margin:0"><div class="confirm-title">待确认事项</div><div id="doctor-confirm-questions"></div></div>
+                  <div class="error" id="doctor-confirm-error">请选择确认依据；选择“其他”时请填写补充说明。图片不能替代必填项。</div>
+                </div>
+                <div class="modal-foot"><button class="btn" data-go="pms-workbench">取消</button><button class="btn primary" id="submit-doctor-confirm">提交</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="pms-material">
+      <div class="canvas">
+        <div class="pms-app">
+          <div class="pms-top"><div class="pms-logo">悦见 LinkedSmile</div><div class="pms-nav"><span>工作台</span><span class="active">病例列表</span><span>帮助中心</span><span>悦见学园</span></div><div class="pms-search">请输入患者姓名/备注搜...</div></div>
+          <div class="pms-body">
+            <div class="case-detail">
+              <div class="material-page" id="material-page">
+                  <aside class="material-sidebar changed">
+                    <label class="pending-only-control"><span>仅展示待完善项</span><input type="checkbox" id="pending-only-toggle" checked></label>
+                    <nav class="pending-nav" id="pending-nav" aria-label="待完善资料定位"></nav>
+                  </aside>
+                  <div class="material-main">
+                    <div class="restart-context" id="restart-context" style="display:none"><h4>中期反馈 <span class="existing">[已有]</span></h4><div class="restart-grid"><div class="restart-fields"><div class="restart-line"></div><div class="restart-line"></div><div class="restart-line"></div></div><div class="restart-fields"><div class="restart-line"></div><div class="restart-line"></div></div></div></div>
+                    <div class="material-toolbar"><h3>影像资料及模型</h3></div>
+                     <div class="confirm-block" id="mixed-confirm-block">
+                       <div class="confirm-title">待确认事项</div>
+                      <div id="mixed-confirm-questions"></div>
+                    </div>
+                    <div id="doctor-material-sections"></div>
+                    <div class="error" id="material-submit-error" style="margin:0 18px 10px">请先完成全部照片、CT 等待完善资料及确认内容；待完善模型未更新时将在提交前统一确认风险。</div>
+                    <div class="material-foot"><span class="submission-note">首次不展示六步导航；重启保留中期反馈及原资料结构。</span><button class="btn" data-go="pms-workbench">返回</button><button class="btn" id="doctor-draft">暂存</button><button class="btn primary" id="submit-doctor-material">提交</button></div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="pms-timeline">
+      <div class="canvas">
+        <div class="pms-app">
+          <div class="pms-top"><div class="pms-logo">悦见 LinkedSmile</div><div class="pms-nav"><span>工作台</span><span class="active">病例列表</span><span>帮助中心</span><span>悦见学园</span></div><div class="pms-search">请输入患者姓名/备注搜...</div></div>
+          <div class="pms-body">
+            <div class="case-detail">
+              <div class="case-header"><h2>0807案例A</h2><div class="case-meta"><span>首次</span><span>悦见·专业版</span><span>订单号：LS01P2026080700201</span></div></div>
+              <div class="timeline">
+                <h3>病例时间轴 <span class="existing">按时间倒序</span></h3>
+                <div id="timeline-completion"></div>
+                <div class="timeline-row" id="timeline-origin-row"><div class="timeline-time">2026-08-07 10:06</div><div class="timeline-line"></div><div class="timeline-text" id="timeline-origin-title">病例资料待完善（正面像、上颌模型；后续设计资料依据）</div><div class="timeline-action" id="timeline-origin-action"></div></div>
+                <div class="timeline-row"><div class="timeline-time">2026-08-06 16:20</div><div class="timeline-line"></div><div class="timeline-text">订单已提交</div></div>
+                <div class="timeline-row"><div class="timeline-time">2026-08-06 15:48</div><div class="timeline-line"></div><div class="timeline-text">新建订单</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="outcome">
+      <div class="canvas">
+        <div class="outcome-grid">
+          <button class="outcome-card active" data-outcome="formal"><h3>有正式资料更新</h3><div>图像 / 模型 / CT 任一新增或替换</div></button>
+          <button class="outcome-card" data-outcome="none"><h3>仅确认回复</h3><div>无正式资料更新，原任务恢复待处理</div></button>
+          <button class="outcome-card" data-outcome="concession"><h3>模型未更新</h3><div>医生确认继续使用，自动执行已有让步接收</div></button>
+          <button class="outcome-card" data-outcome="mixed"><h3>混合重提</h3><div>照片/CT 更新且继续使用当前模型</div></button>
+          <button class="outcome-card" data-outcome="withdrawn"><h3>撤回</h3><div>医生尚未提交</div></button>
+        </div>
+        <div class="result-panel">
+          <h2 style="margin-top:0">结果落定</h2>
+          <div class="result-path" id="result-path"></div>
+          <div style="margin-top:18px;display:flex;gap:9px"><button class="btn" data-go="mes-collab">返回协同工作台</button><button class="btn primary" data-go="pms-timeline">查看 PMS 时间轴</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="login-reminder" id="login-reminder-modal" role="status" aria-live="polite">
+  <div class="login-reminder-head">
+    <strong class="login-reminder-title"><span class="login-reminder-icon">i</span><span id="reminder-count">您有 2 个订单需要完善</span></strong>
+    <button class="close" data-close="login-reminder" aria-label="关闭提醒">×</button>
+  </div>
+  <div class="login-reminder-list" id="login-reminder-cases"></div>
+  <p class="login-reminder-note">请在工作台“待完善”中点击“修改”处理</p>
+</div>
+
+<div class="modal-layer" id="append-modal">
+  <div class="modal wide">
+    <div class="modal-head"><span class="changed">追加待处理事项</span><button class="close" data-close="append">×</button></div>
+    <div class="modal-body">
+      <p>追加写入同一协同单，不创建新待办，不重复发送通知。</p>
+      <div class="module-selector changed"><strong>追加事项（可多选）</strong><label class="module-choice"><input type="checkbox" id="append-enable-material"> 资料需完善</label><label class="module-choice"><input type="checkbox" id="append-enable-confirm"> 医生需确认</label></div>
+      <div class="editor-section module-hidden" id="append-material-section">
+        <h4>资料需完善定位（可跨类别多选）</h4>
+        <div class="structured-materials">
+          <div class="location-row"><span class="location-index">1</span><span class="location-title">面像照</span><div class="location-content"><div class="location-options"><label class="location-option"><input class="append-location" type="checkbox" data-category="面像照" value="正面像">正面像</label><label class="location-option"><input class="append-location" type="checkbox" data-category="面像照" value="正面微笑像">正面微笑像</label><label class="location-option"><input class="append-location" type="checkbox" data-category="面像照" value="侧面像">侧面像</label><label class="location-option"><input class="append-location" type="checkbox" data-category="面像照" value="45度像">45度像</label></div><div class="material-inline-editors"></div></div></div>
+          <div class="location-row"><span class="location-index">2</span><span class="location-title">口内照</span><div class="location-content"><div class="location-options"><label class="location-option"><input class="append-location" type="checkbox" data-category="口内照" value="口内右侧位像">口内右侧位像</label><label class="location-option"><input class="append-location" type="checkbox" data-category="口内照" value="口内正位像">口内正位像</label><label class="location-option"><input class="append-location" type="checkbox" data-category="口内照" value="口内左侧位像">口内左侧位像</label><label class="location-option"><input class="append-location" type="checkbox" data-category="口内照" value="上牙列像">上牙列像</label><label class="location-option"><input class="append-location" type="checkbox" data-category="口内照" value="下牙列像">下牙列像</label><label class="location-option"><input class="append-location" type="checkbox" data-category="口内照" value="覆颌覆盖像">覆颌覆盖像</label></div><div class="material-inline-editors"></div></div></div>
+          <div class="location-row"><span class="location-index">3</span><span class="location-title">X 光片 / CT</span><div class="location-content"><div class="location-options"><label class="location-option"><input class="append-location" type="checkbox" data-category="X光片/CT" value="全颌曲面断层片">全颌曲面断层片</label><label class="location-option"><input class="append-location" type="checkbox" data-category="X光片/CT" value="头颅侧位定位片">头颅侧位定位片</label><label class="location-option"><input class="append-location" type="checkbox" data-category="X光片/CT" value="CBCT">CBCT</label></div><div class="material-inline-editors"></div></div></div>
+          <div class="location-row"><span class="location-index">4</span><span class="location-title">牙颌数据模型</span><div class="location-content"><div class="location-options"><label class="location-option"><input class="append-location" type="checkbox" data-category="牙颌数据模型" value="上颌模型">上颌模型</label><label class="location-option"><input class="append-location" type="checkbox" data-category="牙颌数据模型" value="下颌模型">下颌模型</label></div><div class="material-inline-editors"></div></div></div>
+        </div>
+      </div>
+      <div class="editor-section module-hidden" id="append-confirm-section"><h4>医生需确认</h4><div id="append-confirm-rows"><div class="confirm-row append-confirm-editor-row"><div class="rich-editor"><div class="rich-toolbar">B　I　U　字体　字号　列表　链接<button class="upload-problem" type="button">插入问题图片</button></div><textarea class="textarea append-confirm-question" placeholder="请输入追加的确认内容，保存后合并到同一确认区；文字必填"></textarea></div></div></div></div>
+      <div class="error" id="append-error">请至少选择一种追加事项，并完成已选择模块的必填内容。</div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="append">取消</button><button class="btn primary" id="save-append">保存追加</button></div>
+  </div>
+</div>
+
+<div class="modal-layer" id="withdraw-modal">
+  <div class="modal">
+    <div class="modal-head"><span class="changed">撤回本轮协同</span><button class="close" data-close="withdraw">×</button></div>
+    <div class="modal-body">
+      <p>撤回后医生端待办将关闭，源模型初检任务恢复待处理。医生端不展示撤回原因和内部操作记录。</p>
+      <div style="padding:11px 12px;color:#8c3b34;background:#fff7f5;border:1px solid #edbeb7">确认后将结束本轮医生协同，全部待处理事项同时关闭。</div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="withdraw">取消</button><button class="btn danger" id="confirm-withdraw">确认撤回</button></div>
+  </div>
+</div>
+
+<div class="modal-layer" id="problem-preview-modal">
+  <div class="modal">
+    <div class="modal-head"><span>问题示意图</span><button class="close" data-close="problem-preview">×</button></div>
+    <div class="modal-body">
+      <div style="min-height:300px;display:grid;place-items:center;color:#8c3b34;background:#f3f5f7;border:1px solid #dfe4ea"><div style="text-align:center"><strong>质检问题示意图</strong><p>红框标注需关注区域，仅在质检上传图片时展示。</p></div></div>
+    </div>
+    <div class="modal-foot"><button class="btn primary" data-close="problem-preview">关闭</button></div>
+  </div>
+</div>
+
+<div class="modal-layer" id="reassign-modal">
+  <div class="modal">
+    <div class="modal-head"><span>重新分配</span><button class="close" data-close="reassign">×</button></div>
+    <div class="modal-body">
+      <div class="info-grid" style="grid-template-columns:1fr 1fr;margin-bottom:14px"><div><span>医生：</span><strong id="reassign-doctor">悦见测试</strong></div><div><span>客户：</span><strong id="reassign-patient">0807案例A</strong></div></div>
+      <label>当前处理人<input class="input" id="current-handler-value" value="张吴秀" disabled></label>
+      <label style="display:block;margin-top:12px">新处理人
+        <div class="person-search"><input class="input" id="handler-search" placeholder="输入姓名，支持模糊搜索"><div class="suggestions" id="handler-suggestions"><button class="suggestion" id="current-handler-suggestion" data-person="张吴秀">张吴秀（当前处理人）</button><button class="suggestion" data-person="王晨豪">王晨豪</button><button class="suggestion" data-person="刘雨田">刘雨田</button></div></div>
+      </label>
+      <div class="error" id="reassign-error">请选择新处理人。</div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="reassign">取消</button><button class="btn primary" id="save-reassign">确定</button></div>
+  </div>
+</div>
+
+<div class="modal-layer" id="pending-detail-modal">
+  <div class="modal">
+    <div class="modal-head"><span>订单详情</span><button class="close" data-close="pending-detail">×</button></div>
+    <div class="modal-body">
+      <div class="info-grid" id="pending-detail-content"></div>
+    </div>
+    <div class="modal-foot"><button class="btn primary" data-close="pending-detail">关闭</button></div>
+  </div>
+</div>
+
+<div class="modal-layer" id="order-action-modal">
+  <div class="modal">
+    <div class="modal-head"><span id="order-action-title">挂起订单</span><button class="close" data-close="order-action">×</button></div>
+    <div class="modal-body">
+      <div class="info-grid" style="grid-template-columns:1fr 1fr;margin-bottom:14px"><div><span>医生：</span><strong id="order-action-doctor"></strong></div><div><span>患者：</span><strong id="order-action-patient"></strong></div></div>
+      <label><span id="order-action-label">挂起原因</span><textarea class="textarea" id="order-action-reason" placeholder="请输入原因"></textarea></label>
+      <div class="error" id="order-action-error">请输入原因。</div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="order-action">取消</button><button class="btn primary" id="confirm-order-action">确定</button></div>
+  </div>
+</div>
+
+<div class="modal-layer" id="history-modal">
+  <div class="modal wide">
+    <div class="modal-head"><span>模型初检医生协同记录</span><button class="close" data-close="history">×</button></div>
+    <div class="modal-body" id="history-content"></div>
+    <div class="modal-foot"><button class="btn" data-close="history">关闭</button></div>
+  </div>
+</div>
+
+<div class="modal-layer" id="history-image-modal">
+  <div class="modal">
+    <div class="modal-head"><span id="history-image-title">协同附件</span><button class="close" data-close="history-image">×</button></div>
+    <div class="modal-body"><div class="history-preview"><div class="history-preview-box" id="history-preview-label">附件预览</div></div></div>
+    <div class="modal-foot"><button class="btn" data-close="history-image">关闭</button></div>
+  </div>
+</div>
+
+<div class="modal-layer" id="stale-task-modal" data-persistent="true">
+  <div class="modal" style="width:min(460px,96vw)">
+    <div class="modal-head"><span>待办状态已更新</span></div>
+    <div class="modal-body">
+      <p style="margin:0;font-size:15px;font-weight:700">该待办已完成核实，无需继续处理</p>
+      <p style="margin:8px 0 0;color:#667085">刷新后将返回病例详情。</p>
+    </div>
+    <div class="modal-foot"><button class="btn primary" id="refresh-withdrawn-task">刷新</button></div>
+  </div>
+</div>
+
+<div class="task-update-notice" id="task-update-notice" role="status" aria-live="polite">
+  <div class="task-update-head"><span class="login-reminder-icon">i</span><span>此页面内容有更新</span></div>
+  <div class="task-update-actions"><button id="refresh-updated-task">刷新页面</button></div>
+</div>
+
+<div class="modal-layer" id="model-risk-modal" data-persistent="true">
+  <div class="modal" style="width:min(520px,96vw)">
+    <div class="modal-head"><span>确认继续提交</span></div>
+    <div class="modal-body">
+      <p id="model-risk-copy" style="margin:0;line-height:1.8">本次未上传新的上颌模型，将继续使用当前模型。当前模型可能影响方案准确性或矫治器贴合度，是否继续提交？</p>
+    </div>
+    <div class="modal-foot"><button class="btn" id="return-to-material">返回完善</button><button class="btn primary" id="continue-model-submit">继续提交</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+  const sceneMeta = {
+    overview: ["完整业务流转", "MES 发起一张协同单，PMS 或客服一次处理，按资料更新情况回流。", "跨系统"],
+    "mes-list": ["MES 模型初检列表", "待处理支持按最新协同状态筛选；协同操作仍统一进入医生协同 Tab。", "质检"],
+    "mes-init": ["MES 发起医生协同", "一次添加多个资料需完善项和一项医生确认内容。", "质检"],
+    "mes-collab": ["MES 医生协同工作台", "保留模型初检原有字段，并集中执行追加、撤回、重新分配和客服代录。", "质检 / 客服"],
+    "mes-hung": ["MES 已挂起列表", "保留已有操作并增加重新分配；协同管理仍统一在医生协同 Tab。", "质检"],
+    "cs-proxy": ["MES 客服代录", "复用医生端表单，额外保留线下反馈与沟通截图。", "客服"],
+    "mes-detail": ["MES 详情留痕", "操作信息仅保留一条动作审计摘要；完整业务反馈在列表协同反馈内容中查看。", "内部用户"],
+    "pms-workbench": ["PMS 登录提醒与工作台", "每个登录会话轻量提醒一次；工作台沿用已有“修改”入口。", "医生"],
+    "pms-confirm": ["PMS 仅确认场景", "工作台仍显示待完善病例和“修改”；进入后集中展示问题、示意图和必填选项。", "医生"],
+    "pms-material": ["PMS 含资料场景", "沿用首次或重启现有资料页及页面标题，仅在原上传控件上增加待完善定位。", "医生"],
+    "pms-timeline": ["PMS 病例时间轴", "按时间倒序保留发起记录和完成记录。", "医生"],
+    outcome: ["结果落定", "根据正式资料是否更新决定不通过、重提/重置或恢复待处理。", "系统"]
+  };
+
+  const materialGroups = [
+    { key: "面像照", title: "1. 面像照" },
+    { key: "口内照", title: "2. 口内照" },
+    { key: "X光片/CT", title: "3. X 光片 / CT" },
+    { key: "牙颌数据模型", title: "4. 牙颌数据模型" }
+  ];
+  const materialCatalog = [
+    { group: "面像照", key: "正面像", preview: "人像", upload: "照片", ext: "jpg" },
+    { group: "面像照", key: "正面微笑像", preview: "微笑", upload: "照片", ext: "jpg" },
+    { group: "面像照", key: "侧面像", preview: "侧面", upload: "照片", ext: "jpg" },
+    { group: "面像照", key: "45度像", preview: "45°", upload: "照片", ext: "jpg" },
+    { group: "口内照", key: "口内右侧位像", preview: "右侧", upload: "照片", ext: "jpg" },
+    { group: "口内照", key: "口内正位像", preview: "正位", upload: "照片", ext: "jpg" },
+    { group: "口内照", key: "口内左侧位像", preview: "左侧", upload: "照片", ext: "jpg" },
+    { group: "口内照", key: "上牙列像", preview: "上牙列", upload: "照片", ext: "jpg" },
+    { group: "口内照", key: "下牙列像", preview: "下牙列", upload: "照片", ext: "jpg" },
+    { group: "口内照", key: "覆颌覆盖像", preview: "咬合", upload: "照片", ext: "jpg" },
+    { group: "X光片/CT", key: "全颌曲面断层片", preview: "全景片", upload: "影像", ext: "dcm" },
+    { group: "X光片/CT", key: "头颅侧位定位片", preview: "头侧片", upload: "影像", ext: "dcm" },
+    { group: "X光片/CT", key: "CBCT", preview: "CT", upload: "影像", ext: "zip" },
+    { group: "牙颌数据模型", key: "上颌模型", preview: "STL", upload: "模型", ext: "stl", model: true },
+    { group: "牙颌数据模型", key: "下颌模型", preview: "STL", upload: "模型", ext: "stl", model: true }
+  ];
+  const materialDescriptionSamples = {
+    "正面像": "正面像模糊，无法判断面中线，请重新拍摄清晰的正面像。",
+    "口内正位像": "照片曝光不足，无法看清前牙咬合关系，请在自然咬合状态下重新拍摄。",
+    "上颌模型": "上颌口扫存在孔洞，请重新扫描并上传完整模型。",
+    "CBCT": "CBCT 文件不完整，请重新上传完整影像资料。"
+  };
+
+  const initialState = () => ({
+    activeMaterials: [
+      { id: "m1", type: "面像照", target: "正面像", desc: "正面像模糊，无法判断面中线，请重新拍摄清晰的正面像。", issueImage: true, withdrawn: false },
+      { id: "m2", type: "牙颌数据模型", target: "上颌模型", desc: "上颌口扫存在孔洞，请重新扫描并上传完整模型。", issueImage: false, withdrawn: false }
+    ],
+    confirmations: [
+      { id: "q1", question: "后续设计请确认以口扫、照片、模型还是 CT 为准。", issueImage: true, withdrawn: false }
+    ],
+    collaborationStatus: "待反馈",
+    handler: "张吴秀",
+    versionUpdated: false,
+    submittedBy: "",
+    formalUpdated: false,
+    modelUpdated: false,
+    completed: new Set(),
+    voluntaryUpdated: new Set(),
+    consentModels: [],
+    pendingConsentModels: [],
+    pendingSubmitSource: "",
+    evidence: 0,
+    doctorConfirmResponses: {},
+    proxyConfirmResponses: {},
+    historyEvents: [],
+    selectedOutcome: "formal",
+    contextMode: "mixed",
+    currentUser: "张吴秀",
+    currentUserInModelCenter: true,
+    currentUserInCustomerExperience: false,
+    orderPageType: "first",
+    loginReminderShown: false,
+    doctorPageStale: false,
+    withdrawnSummary: "",
+    pendingRefreshScene: "",
+    formContentLoaded: false,
+    sourceDisposition: ""
+  });
+  let state = initialState();
+  let currentScene = "overview";
+  let pendingActionRow = null;
+  let pendingActionType = "";
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  function toast(message) {
+    const el = $("#toast");
+    el.textContent = message;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+  }
+  function filterPendingRows() {
+    const filter = $("#pending-collab-filter");
+    if (!filter) return;
+    const patientKeyword = $("#pending-patient-filter").value.trim().toLowerCase();
+    const prescriptionKeyword = $("#pending-prescription-filter").value.trim().toLowerCase();
+    const orderKeyword = $("#pending-order-filter").value.trim().toLowerCase();
+    const handlerKeyword = $("#pending-handler-filter").value.trim().toLowerCase();
+    let visibleCount = 0;
+    $$("#mes-pending-body tr[data-collab-status]").forEach(row => {
+      const sourceActive = row.dataset.sourceActive !== "0";
+      const cells = row.cells;
+      const patientText = [cells[2]?.textContent, cells[3]?.textContent, cells[4]?.textContent].join(" ").toLowerCase();
+      const prescriptionText = (cells[0]?.textContent || "").toLowerCase();
+      const orderText = (cells[1]?.textContent || "").toLowerCase();
+      const handlerText = (cells[10]?.textContent || "").toLowerCase();
+      const visible = sourceActive
+        && (filter.value === "all" || row.dataset.collabStatus === filter.value)
+        && (!patientKeyword || patientText.includes(patientKeyword))
+        && (!prescriptionKeyword || prescriptionText.includes(prescriptionKeyword))
+        && (!orderKeyword || orderText.includes(orderKeyword))
+        && (!handlerKeyword || handlerText.includes(handlerKeyword));
+      row.style.display = visible ? "" : "none";
+      if (visible) visibleCount += 1;
+    });
+    $("#pending-filter-empty")?.classList.toggle("show", visibleCount === 0);
+    if ($("#pending-result-count")) $("#pending-result-count").textContent = visibleCount;
+  }
+  function renderPendingSourceTask() {
+    const row = $("#restored-pending-row");
+    if (!row) return;
+    const sourceActive = state.collaborationStatus === "未发起"
+      || state.collaborationStatus === "已撤回"
+      || (state.collaborationStatus === "已反馈" && state.sourceDisposition !== "让步接收");
+    const hasFeedback = state.collaborationStatus === "已反馈";
+    const hasWithdrawn = state.collaborationStatus === "已撤回";
+    row.dataset.sourceActive = sourceActive ? "1" : "0";
+    row.dataset.collabStatus = hasFeedback ? "feedback" : hasWithdrawn ? "withdrawn" : "none";
+    $("#restored-collab-status").textContent = hasFeedback ? "已反馈" : hasWithdrawn ? "已撤回" : "-";
+    $("#restored-handler").textContent = state.handler;
+    filterPendingRows();
+  }
+  function filterCollabRows() {
+    const filter = $("#collab-status-filter");
+    if (!filter) return;
+    let visibleCount = 0;
+    $$("#collab-body tr[data-collab-state]").forEach(row => {
+      const active = row.dataset.collabActive !== "0";
+      const visible = active && (filter.value === "all" || row.dataset.collabState === filter.value);
+      row.style.display = visible ? "" : "none";
+      if (visible) visibleCount += 1;
+    });
+    $("#collab-filter-empty")?.classList.toggle("show", visibleCount === 0);
+    $("#collab-result-count").textContent = visibleCount;
+  }
+  function hideLoginReminder() {
+    $("#login-reminder-modal").classList.remove("open");
+  }
+  function showLoginReminder() {
+    hideLoginReminder();
+    $("#login-reminder-modal").classList.add("open");
+  }
+  function syncTaskUpdateNotice(scene = currentScene) {
+    const formOpen = ["pms-confirm", "pms-material", "cs-proxy"].includes(scene);
+    $("#task-update-notice").classList.toggle("open", formOpen && state.versionUpdated);
+  }
+  function clearSceneOverlays(nextScene) {
+    $$(".modal-layer.open").forEach(layer => layer.classList.remove("open"));
+    if (nextScene !== "pms-workbench") hideLoginReminder();
+  }
+  function showScene(id) {
+    if (!sceneMeta[id]) return;
+    clearSceneOverlays(id);
+    if (id === "pms-confirm") state.contextMode = "confirm";
+    if (id === "pms-material" || id === "cs-proxy") state.contextMode = "mixed";
+    currentScene = id;
+    $$(".scene").forEach(el => el.classList.toggle("active", el.id === id));
+    $$(".scene-link").forEach(el => el.classList.toggle("active", el.dataset.scene === id && (!el.dataset.orderType || el.dataset.orderType === state.orderPageType)));
+    $("#scene-title").textContent = sceneMeta[id][0];
+    $("#scene-subtitle").textContent = sceneMeta[id][1];
+    $("#role-tag").textContent = sceneMeta[id][2];
+    history.replaceState(null, "", "#scene=" + id);
+    window.scrollTo(0, 0);
+    if (id === "mes-list") renderPendingSourceTask();
+    if (id === "mes-collab") renderCollab();
+    if (id === "mes-detail") renderFeedback();
+    const formScenes = ["pms-confirm", "pms-material", "cs-proxy"];
+    if (id === "pms-workbench" && !(state.versionUpdated && state.formContentLoaded)) renderWorkbench();
+    if (formScenes.includes(id)) {
+      if (!state.formContentLoaded) {
+        renderWorkbench();
+        state.formContentLoaded = true;
+        state.versionUpdated = false;
+      } else if (!state.versionUpdated) {
+        renderWorkbench();
+      }
+    }
+    if (id === "pms-material") syncOrderPageTitle();
+    if (id === "pms-workbench" && !state.loginReminderShown) {
+      state.loginReminderShown = true;
+      showLoginReminder();
+    }
+    if (["pms-material", "pms-confirm"].includes(id) && state.collaborationStatus === "已撤回" && state.doctorPageStale) {
+      $("#stale-task-modal").classList.add("open");
+    }
+    if (id === "pms-timeline") renderTimeline();
+    if (id === "outcome") renderOutcome();
+    syncTaskUpdateNotice(id);
+  }
+  function openModal(name) {
+    if (name === "withdraw") renderWithdraw();
+    if (name === "history") renderHistory();
+    if (name === "reassign") {
+      const rowData = pendingActionRow ? getPendingRowData(pendingActionRow) : null;
+      const currentHandler = rowData?.handler || state.handler;
+      $("#current-handler-value").value = currentHandler;
+      $("#current-handler-suggestion").dataset.person = currentHandler;
+      $("#current-handler-suggestion").textContent = currentHandler + "（当前处理人）";
+      $$("#handler-suggestions .suggestion").forEach(button => {
+        button.hidden = button.id !== "current-handler-suggestion" && button.dataset.person === currentHandler;
+      });
+      $("#reassign-doctor").textContent = rowData?.doctor || "悦见测试";
+      $("#reassign-patient").textContent = rowData?.patient || "0807案例A";
+      $("#handler-search").value = "";
+      $("#reassign-error").classList.remove("show");
+    }
+    $("#" + name + "-modal")?.classList.add("open");
+  }
+  function closeModal(name) {
+    if (name === "login-reminder") return hideLoginReminder();
+    $("#" + name + "-modal")?.classList.remove("open");
+  }
+  function getPendingRowData(row) {
+    const cells = row.cells;
+    return {
+      prescription: cells[0]?.textContent.trim() || "-",
+      order: cells[1]?.textContent.trim() || "-",
+      clinic: cells[2]?.textContent.trim() || "-",
+      doctor: row.dataset.doctor || cells[3]?.textContent.trim() || "-",
+      patient: row.dataset.patient || cells[4]?.textContent.trim() || "-",
+      orderType: cells[5]?.textContent.trim() || "-",
+      stage: cells[6]?.textContent.trim() || "-",
+      product: cells[7]?.textContent.trim() || "-",
+      model: cells[8]?.textContent.trim() || "-",
+      submittedAt: cells[9]?.textContent.trim() || "-",
+      handler: $(".pending-handler", row)?.textContent.trim() || cells[10]?.textContent.trim() || "-",
+      qcStatus: row.dataset.qcStatus || cells[11]?.textContent.trim() || "-",
+      collabStatus: row.dataset.collabStatus || cells[12]?.textContent.trim() || "-"
+    };
+  }
+  function openPendingDetail(row) {
+    const data = getPendingRowData(row);
+    if (row.id === "restored-pending-row" || row.dataset.currentOrder === "1") {
+      showScene("mes-init");
+      return;
+    }
+    $("#pending-detail-content").innerHTML = [
+      ["订单号", data.order], ["订单类型", data.orderType], ["医生", data.doctor], ["患者", data.patient],
+      ["模型类型", data.model], ["处理人", data.handler], ["提交质检日期", data.submittedAt], ["协同状态", data.collabStatus]
+    ].map(item => '<div><span>' + item[0] + '：</span>' + escapeHtml(item[1]) + '</div>').join("");
+    openModal("pending-detail");
+  }
+  function openOrderAction(row, type) {
+    const data = getPendingRowData(row);
+    pendingActionRow = row;
+    pendingActionType = type;
+    const isHang = type === "hang";
+    $("#order-action-title").textContent = isHang ? "挂起订单" : "作废订单";
+    $("#order-action-label").textContent = isHang ? "挂起原因" : "作废原因";
+    $("#order-action-reason").placeholder = isHang ? "请输入挂起原因" : "请输入作废原因";
+    $("#order-action-doctor").textContent = data.doctor;
+    $("#order-action-patient").textContent = data.patient;
+    $("#order-action-reason").value = "";
+    $("#order-action-error").classList.remove("show");
+    openModal("order-action");
+  }
+  function syncModuleVisibility() {
+    $("#material-editor-section").classList.toggle("module-hidden", !$("#enable-material").checked);
+    $("#confirm-editor-section").classList.toggle("module-hidden", !$("#enable-confirm").checked);
+    $("#append-material-section").classList.toggle("module-hidden", !$("#append-enable-material").checked);
+    $("#append-confirm-section").classList.toggle("module-hidden", !$("#append-enable-confirm").checked);
+  }
+  function ensureMaterialEditor(input) {
+    const container = $(".material-inline-editors", input.closest(".location-row"));
+    let editor = $$(".material-inline-editor", container).find(item => item.dataset.target === input.value);
+    if (!editor) {
+      const sample = materialDescriptionSamples[input.value] || "";
+      container.insertAdjacentHTML("beforeend", '<div class="material-inline-editor" data-target="' + escapeHtml(input.value) + '"><div class="material-inline-head"><span>' + escapeHtml(input.value) + '｜质检说明（必填）</span><button type="button" class="material-inline-toggle" aria-label="展开或收起"></button></div><div class="material-inline-body"><div class="rich-editor"><div class="rich-toolbar">B　I　U　字体　字号　列表　链接<button class="upload-problem" type="button">插入问题示意图</button></div><textarea class="textarea material-item-desc" placeholder="请说明当前资料存在的问题及医生需要如何处理，文字必填，图片不能替代说明">' + escapeHtml(sample) + '</textarea></div></div></div>');
+      editor = $$(".material-inline-editor", container).find(item => item.dataset.target === input.value);
+    }
+    editor.hidden = !input.checked;
+    if (input.checked) editor.classList.remove("collapsed");
+    return editor;
+  }
+  function syncMaterialLocation(input) {
+    const editor = ensureMaterialEditor(input);
+    if (input.checked) editor.classList.remove("collapsed");
+  }
+  function normalizedRichText(value) {
+    return String(value || "")
+      .replace(/<br\s*\/?>/gi, "")
+      .replace(/<\/?(?:p|div|span|strong|em|u|s|ul|ol|li)[^>]*>/gi, "")
+      .replace(/&nbsp;|&#160;/gi, "")
+      .replace(/\s+/g, "")
+      .trim();
+  }
+  function materialEntry(input) {
+    const editor = ensureMaterialEditor(input);
+    const desc = $(".material-item-desc", editor).value.trim();
+    return {
+      type: input.dataset.category,
+      target: input.value,
+      desc,
+      issueImage: $(".upload-problem", editor)?.dataset.uploaded === "1"
+    };
+  }
+  function validateMaterialEntries(inputs) {
+    let valid = inputs.length > 0;
+    inputs.forEach(input => {
+      const editor = ensureMaterialEditor(input);
+      const hasText = normalizedRichText($(".material-item-desc", editor).value).length > 0;
+      $(".rich-editor", editor).classList.toggle("field-invalid", !hasText);
+      if (!hasText) valid = false;
+    });
+    return valid;
+  }
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+  }
+  function originalUploadName(key, ext) {
+    const names = {
+      "正面像": "DSC_3922.jpg",
+      "正面微笑像": "DSC_3923.jpg",
+      "侧面像": "DSC_3924.jpg",
+      "45度像": "DSC_3925.jpg",
+      "口内右侧位像": "IMG_0871.jpg",
+      "口内正位像": "IMG_0872.jpg",
+      "口内左侧位像": "IMG_0873.jpg",
+      "上牙列像": "IMG_0874.jpg",
+      "下牙列像": "IMG_0875.jpg",
+      "覆颌覆盖像": "IMG_0876.jpg",
+      "全颌曲面断层片": "panorama.dcm",
+      "头颅侧位定位片": "ceph.dcm",
+      "CBCT": "CBCT_20260807.zip",
+      "上颌模型": "UpperJaw_scan.stl",
+      "下颌模型": "LowerJaw_scan.stl"
+    };
+    return names[key] || "doctor_upload." + (ext || "dat");
+  }
+  function responseStore(mode) {
+    return mode === "proxy" ? state.proxyConfirmResponses : state.doctorConfirmResponses;
+  }
+  function confirmationResponse(mode, id) {
+    const store = responseStore(mode);
+    if (!store[id]) store[id] = { basis: "", other: "", images: 0 };
+    return store[id];
+  }
+  function confirmationPanelMarkup(items, mode) {
+    return items.map(item => {
+      const response = confirmationResponse(mode, item.id);
+      const name = mode + "-basis-" + item.id;
+      const choices = ["口扫", "照片", "模型", "CT", "其他"].map(value =>
+        '<label><input class="confirmation-basis" data-confirm-mode="' + mode + '" data-question-id="' + escapeHtml(item.id) + '" type="radio" name="' + name + '" value="' + value + '"' + (response.basis === value ? " checked" : "") + '>' + value + '</label>'
+      ).join("");
+      return '<div class="question" data-confirm-question="' + escapeHtml(item.id) + '" data-question-signature="' + escapeHtml(item.question + ":" + item.issueImage) + '">' +
+        '<div class="confirmation-message"><p>' + escapeHtml(item.question) + '</p>' +
+        (item.issueImage ? '<button class="problem-evidence preview-problem" type="button">查看质检附图（1）</button>' : '') + '</div>' +
+        '<div class="confirmation-answer"><div class="confirm-answer-title">请确认以哪项资料为准（必填）</div><div class="basis-options">' + choices + '</div>' +
+        '<input class="input confirmation-other" data-confirm-mode="' + mode + '" data-question-id="' + escapeHtml(item.id) + '" value="' + escapeHtml(response.other) + '" placeholder="选择其他时请补充说明" style="display:' + (response.basis === "其他" ? "block" : "none") + ';margin-top:8px">' +
+        '<div class="reply-upload"><button class="upload-mini confirm-reply-upload" data-confirm-mode="' + mode + '" data-question-id="' + escapeHtml(item.id) + '" type="button">上传回复图片（选填）</button><span class="confirm-reply-count" style="margin-left:8px;color:#667085">' + response.images + ' 张</span></div></div></div>';
+    }).join("");
+  }
+  function captureConfirmationResponses() {
+    ["doctor", "proxy"].forEach(mode => {
+      $$('.confirmation-basis[data-confirm-mode="' + mode + '"]:checked').forEach(checked => {
+        confirmationResponse(mode, checked.dataset.questionId).basis = checked.value;
+      });
+      $$('.confirmation-other[data-confirm-mode="' + mode + '"]').forEach(other => {
+        confirmationResponse(mode, other.dataset.questionId).other = other.value;
+      });
+    });
+  }
+  function renderConfirmationForms() {
+    captureConfirmationResponses();
+    const confirmations = state.confirmations.filter(item => !item.withdrawn);
+    const targets = [
+      ["doctor-confirm-questions", "doctor"],
+      ["mixed-confirm-questions", "doctor"],
+      ["proxy-confirm-questions", "proxy"]
+    ];
+    targets.forEach(([id, mode]) => {
+      const root = $("#" + id);
+      if (!root) return;
+      root.innerHTML = confirmations.length ? confirmationPanelMarkup(confirmations, mode) : "";
+    });
+  }
+  function validateConfirmationResponses(mode) {
+    return state.confirmations.filter(item => !item.withdrawn).every(item => {
+      const response = confirmationResponse(mode, item.id);
+      return Boolean(response.basis && (response.basis !== "其他" || normalizedRichText(response.other)));
+    });
+  }
+  function materialCard(meta, activeItem, mode) {
+    const isActive = Boolean(activeItem);
+    const completed = state.completed.has(meta.key);
+    const itemClass = mode === "doctor" ? "doctor-material" : "proxy-material";
+    const actionClass = mode === "doctor" ? "doctor" : "proxy";
+    const classes = ["material-item", isActive ? itemClass : "optional"];
+    if (isActive && !completed) classes.push(meta.model ? "suggested" : "target");
+    let actions;
+    if (completed) {
+      actions = '<span class="item-complete">已上传：' + escapeHtml(originalUploadName(meta.key, meta.ext)) + '</span>';
+    } else if (isActive) {
+      actions = meta.model ? '<button class="btn small ' + actionClass + '-upload" data-model="1">上传' + meta.upload + '</button>' : '';
+    } else {
+      actions = meta.model ? '<button class="btn small voluntary-upload" data-model="1">更换' + meta.upload + '</button>' : '';
+    }
+    const evidence = isActive && activeItem.issueImage ? '<button class="problem-evidence preview-problem" type="button">查看质检附图（1）</button>' : '';
+    if (meta.model) {
+      const jawLabel = meta.key === "上颌模型" ? "上颌" : "下颌";
+      return '<article id="' + mode + '-item-' + escapeHtml(meta.key) + '" class="' + classes.concat("model-upload-item").join(" ") + '" data-key="' + escapeHtml(meta.key) + '" data-ext="' + meta.ext + '" data-model="1" data-complete="' + (completed ? "1" : "0") + '">' +
+        (isActive && !completed ? '<span class="target-label suggested-label">建议更新</span>' : '') +
+        '<div class="model-upload-line"><strong>' + jawLabel + '</strong><div class="fake-file-input">' + (completed ? escapeHtml(originalUploadName(meta.key, meta.ext)) : '请上传 STL 文件') + '</div><div class="item-actions">' + actions + '</div><span class="drag-tip">拖放至按钮处可上传模型</span></div>' +
+        (isActive ? '<div class="model-qc-note"><strong>质检说明：</strong>' + escapeHtml(activeItem.desc) + evidence + '</div>' : '') + '</article>';
+    }
+    return '<article id="' + mode + '-item-' + escapeHtml(meta.key) + '" class="' + classes.join(" ") + '" data-key="' + escapeHtml(meta.key) + '" data-ext="' + meta.ext + '" data-complete="' + (completed ? "1" : "0") + '">' +
+      (isActive && !completed ? '<span class="target-label">需更新</span>' : '') +
+      '<button type="button" class="material-preview ' + actionClass + '-preview-upload" aria-label="点击替换' + escapeHtml(meta.key) + '">' + (completed ? '已上传，点击可重新替换' : '点击图片替换') + '</button><div class="material-name">' + escapeHtml(meta.key) + '</div><div class="issue-note">' + (isActive ? '<strong>质检说明：</strong>' + escapeHtml(activeItem.desc) : "现有资料") + '</div>' + evidence + '<div class="item-actions">' + actions + '</div></article>';
+  }
+  function renderMaterialForms() {
+    const activeMaterials = state.activeMaterials.filter(item => !item.withdrawn);
+    const activeMap = new Map(activeMaterials.map(item => [item.target, item]));
+    const doctorRoot = $("#doctor-material-sections");
+    if (doctorRoot) {
+      doctorRoot.innerHTML = materialGroups.map(group => {
+        const groupItems = materialCatalog.filter(meta => meta.group === group.key);
+        const hasActive = groupItems.some(meta => activeMap.has(meta.key));
+        if (group.key === "牙颌数据模型") {
+          return '<div class="material-section' + (hasActive ? "" : " empty-pending") + '"><h4>' + group.title + '</h4><div class="model-type-options"><label><input type="radio" name="doctor-model-type" checked>口扫模型</label><label><input type="radio" name="doctor-model-type">石膏模型</label><label><input type="radio" name="doctor-model-type">硅橡胶模型</label></div><div class="model-upload-list">' + groupItems.map(meta => materialCard(meta, activeMap.get(meta.key), "doctor")).join("") + '</div></div>';
+        }
+        return '<div class="material-section' + (hasActive ? "" : " empty-pending") + '"><h4>' + group.title + '</h4><div class="material-grid">' + groupItems.map(meta => materialCard(meta, activeMap.get(meta.key), "doctor")).join("") + '</div></div>';
+      }).join("");
+    }
+    const confirmations = state.confirmations.filter(item => !item.withdrawn).length;
+    const pendingNav = $("#pending-nav");
+    if (pendingNav) {
+      const onlyPending = $("#pending-only-toggle").checked;
+      pendingNav.innerHTML = (confirmations ? '<div class="pending-nav-title">待确认事项</div><button type="button" data-scroll-target="mixed-confirm-block">确认事项</button>' : '') + materialGroups.map(group => {
+        const items = materialCatalog.filter(meta => meta.group === group.key && (!onlyPending || activeMap.has(meta.key)));
+        if (!items.length) return "";
+        return '<div class="pending-nav-title">' + group.title + '</div>' + items.map(meta => '<button type="button" data-scroll-material="' + escapeHtml(meta.key) + '">' + escapeHtml(meta.key) + '</button>').join("");
+      }).join("");
+    }
+    const proxyRoot = $("#proxy-material-sections");
+    if (proxyRoot) {
+      const onlyPending = $("#proxy-pending-only-toggle")?.checked ?? true;
+      proxyRoot.innerHTML = materialGroups.map(group => {
+        const groupItems = materialCatalog.filter(meta => meta.group === group.key);
+        const hasActive = groupItems.some(meta => activeMap.has(meta.key));
+        if (onlyPending && !hasActive) return "";
+        if (group.key === "牙颌数据模型") {
+          return '<div class="material-section' + (hasActive ? "" : " empty-pending") + '"><h4>' + group.title + '</h4><div class="model-type-options"><label><input type="radio" name="proxy-model-type" checked>口扫模型</label><label><input type="radio" name="proxy-model-type">石膏模型</label><label><input type="radio" name="proxy-model-type">硅橡胶模型</label></div><div class="model-upload-list">' + groupItems.map(meta => materialCard(meta, activeMap.get(meta.key), "proxy")).join("") + '</div></div>';
+        }
+        return '<div class="material-section' + (hasActive ? "" : " empty-pending") + '"><h4>' + group.title + '</h4><div class="material-grid">' + groupItems.map(meta => materialCard(meta, activeMap.get(meta.key), "proxy")).join("") + '</div></div>';
+      }).join("");
+    }
+    const proxyPendingNav = $("#proxy-pending-nav");
+    if (proxyPendingNav) {
+      const onlyPending = $("#proxy-pending-only-toggle")?.checked ?? true;
+      proxyPendingNav.innerHTML = (confirmations ? '<div class="pending-nav-title">待确认事项</div><button type="button" data-scroll-target="proxy-confirm-block">确认事项</button>' : '') + materialGroups.map(group => {
+        const items = materialCatalog.filter(meta => meta.group === group.key && (!onlyPending || activeMap.has(meta.key)));
+        if (!items.length) return "";
+        return '<div class="pending-nav-title">' + group.title + '</div>' + items.map(meta => '<button type="button" data-scroll-proxy-material="' + escapeHtml(meta.key) + '">' + escapeHtml(meta.key) + '</button>').join("");
+      }).join("");
+    }
+    renderConfirmationForms();
+  }
+  function activeItems() {
+    return [
+      ...state.activeMaterials.filter(x => !x.withdrawn).map(x => ({ id: x.id, kind: "资料", label: x.target })),
+      ...state.confirmations.filter(x => !x.withdrawn).map(x => ({ id: x.id, kind: "确认", label: x.question }))
+    ];
+  }
+  function historyTimestamp(type) {
+    if (type === "发起医生协同") return "2026-08-07 10:06:20";
+    if (type === "追加待处理事项") return "2026-08-07 10:18:42";
+    if (type === "撤回") return "2026-08-07 10:20:06";
+    if (type === "重新分配") return "2026-08-07 10:22:05";
+    return "2026-08-07 11:26:08";
+  }
+  function cloneMaterials(items) {
+    return items.map(item => ({ id: item.id, type: item.type, target: item.target, desc: item.desc, issueImage: item.issueImage }));
+  }
+  function cloneConfirmations(items) {
+    return items.map(item => ({ id: item.id, question: item.question, issueImage: item.issueImage }));
+  }
+  function defaultHistoryActor(type) {
+    if (type === "医生提交") return "悦见测试";
+    if (type === "客服代录") return "刘雨田";
+    return state.currentUser;
+  }
+  function defaultHistoryRole(type) {
+    if (type === "医生提交") return "医生";
+    if (type === "客服代录") return "客服";
+    return "质检";
+  }
+  function pushHistoryEvent(type, payload = {}) {
+    state.historyEvents.push({
+      type,
+      actor: payload.actor || defaultHistoryActor(type),
+      role: payload.role || defaultHistoryRole(type),
+      at: historyTimestamp(type),
+      ...payload
+    });
+  }
+  function submittedMaterialSnapshot(mode) {
+    const selector = mode === "proxy" ? ".proxy-material" : ".doctor-material";
+    return $$(selector).map(item => ({
+      target: item.dataset.key,
+      result: item.dataset.complete === "1" ? "已补充" : "继续使用当前模型",
+      fileName: item.dataset.complete === "1" ? originalUploadName(item.dataset.key, item.dataset.ext) : ""
+    }));
+  }
+  function submittedConfirmationSnapshot(mode) {
+    const items = state.confirmations.filter(item => !item.withdrawn);
+    return items.map(item => {
+      const response = confirmationResponse(mode, item.id);
+      return { question: item.question, basis: response.basis, other: response.other, images: response.images };
+    });
+  }
+  function eventAuditStatus(event) {
+    if (event.type === "撤回") return "已撤回";
+    if (["医生提交", "客服代录"].includes(event.type)) return "已反馈";
+    if (event.type === "重新分配") return "处理人已更新";
+    return "待反馈";
+  }
+  function eventAuditAction(event) {
+    return ({
+      "发起医生协同": "发起协同",
+      "追加待处理事项": "追加事项",
+      "重新分配": "重新分配",
+      "撤回": "撤回协同",
+      "医生提交": "医生反馈",
+      "客服代录": "客服代录"
+    })[event.type] || event.type;
+  }
+  function historyAttachmentButton(title, label) {
+    return '<button class="history-image-thumb" data-open="history-image" data-history-title="' + escapeHtml(title) + '" data-history-label="' + escapeHtml(label) + '">' + escapeHtml(label) + '</button>';
+  }
+  function historyAttachments(event) {
+    const items = [];
+    if (["发起医生协同", "追加待处理事项"].includes(event.type)) {
+      (event.materials || []).filter(item => item.issueImage).forEach(item => items.push([item.target + "问题图片", item.target + "质检问题图片"]));
+      (event.confirmations || []).filter(item => item.issueImage).forEach((item, index) => items.push(["确认问题图片", "确认问题图片 " + (index + 1)]));
+    }
+    if (["医生提交", "客服代录"].includes(event.type)) {
+      (event.confirmations || []).forEach((item, questionIndex) => {
+        for (let index = 0; index < Number(item.images || 0); index += 1) {
+          items.push(["医生回复图片", "确认回复图片 " + (questionIndex + 1) + "-" + (index + 1)]);
+        }
+      });
+      for (let index = 0; index < Number(event.evidence || 0); index += 1) {
+        items.push(["客服沟通截图", "与医生沟通截图 " + (index + 1)]);
+      }
+    }
+    return items.length ? '<div class="history-attachments">' + items.map(item => historyAttachmentButton(item[0], item[1])).join("") + '</div>' : '';
+  }
+  function confirmationResultText(item) {
+    if (!item.basis) return "未填写";
+    return item.basis === "其他" ? "确认：其他，" + (item.other || "-") : "确认：以" + item.basis + "为准";
+  }
+  function historyEventDetail(event) {
+    const lines = [];
+    if (["发起医生协同", "追加待处理事项"].includes(event.type)) {
+      const prefix = event.type === "发起医生协同" ? "发起信息" : "更新内容";
+      (event.materials || []).forEach(item => lines.push('<div class="history-detail-line"><strong>' + prefix + '－资料需完善：</strong>' + escapeHtml(item.target + "；" + item.desc) + '</div>'));
+      (event.confirmations || []).forEach(item => lines.push('<div class="history-detail-line"><strong>' + prefix + '－医生需确认：</strong>' + escapeHtml(item.question) + '</div>'));
+    } else if (event.type === "重新分配") {
+      lines.push('<div class="history-detail-line"><strong>更新内容：</strong>处理人由' + escapeHtml(event.from || "-") + '变更为' + escapeHtml(event.to || "-") + '</div>');
+    } else if (event.type === "撤回") {
+      lines.push('<div class="history-detail-line"><strong>更新内容：</strong>撤回本轮协同并关闭全部有效事项</div>');
+    } else if (["医生提交", "客服代录"].includes(event.type)) {
+      const updated = [...new Set([...(event.materials || []).filter(item => item.result === "已补充").map(item => item.target), ...(event.voluntaryUpdated || [])])];
+      if (updated.length) lines.push('<div class="history-detail-line"><strong>资料变更：</strong>已更新' + escapeHtml(updated.join("、")) + '</div>');
+      (event.consentModels || []).forEach(item => lines.push('<div class="history-detail-line"><strong>模型反馈：</strong>未更新' + escapeHtml(item) + '，继续使用上一版模型（医生已同意）</div>'));
+      (event.confirmations || []).forEach(item => lines.push('<div class="history-detail-line"><strong>反馈信息：</strong>' + escapeHtml(confirmationResultText(item)) + '（质检发起：' + escapeHtml(item.question) + '）</div>'));
+      if (event.feedback) lines.push('<div class="history-detail-line"><strong>补充反馈：</strong>' + escapeHtml(event.feedback) + '</div>');
+      if (!lines.length) lines.push('<div class="history-detail-line"><strong>反馈信息：</strong>已完成本轮协同</div>');
+    }
+    return lines.join("") + historyAttachments(event);
+  }
+  function shorten(text, max = 18) {
+    const value = String(text || "").replace(/[。；]/g, "").trim();
+    return value.length > max ? value.slice(0, max) + "…" : value;
+  }
+  function doctorFacingSummary(materials, confirmations, detailed = false) {
+    const clean = value => String(value || "").replace(/[。；]+$/g, "").trim();
+    const materialText = materials.map(item => detailed ? clean(item.desc) : item.target).filter(Boolean);
+    const confirmationText = confirmations.map(item => detailed ? clean(item.question) : shorten(item.question, 16)).filter(Boolean);
+    return [...materialText, ...confirmationText].join("；") || "本次待完善事项";
+  }
+  function collaborationFeedbackSummary() {
+    if (!state.submittedBy || state.collaborationStatus === "已撤回") return "-";
+    const updated = [...new Set([...state.completed, ...state.voluntaryUpdated])];
+    const parts = [];
+    if (updated.length) parts.push("已更新资料：" + updated.join("、"));
+    if (state.consentModels.length) parts.push("未更新" + state.consentModels.join("、") + "，继续使用上一版模型（医生已同意）");
+    const mode = state.submittedBy === "客服" ? "proxy" : "doctor";
+    state.confirmations.filter(item => !item.withdrawn).forEach(item => {
+      const response = confirmationResponse(mode, item.id);
+      if (!response.basis) return;
+      const answer = response.basis === "其他" ? "其他，" + response.other.trim() : "以" + response.basis + "为准";
+      parts.push("确认：" + answer + " (质检发起：" + item.question + ")");
+    });
+    return parts.join("；") || "已完成本轮协同";
+  }
+  function syncOrderPageTitle() {
+    const isRestart = state.orderPageType === "restart";
+    $("#restart-context").style.display = isRestart ? "block" : "none";
+  }
+  function renderCollab() {
+    const mats = state.activeMaterials.filter(x => !x.withdrawn).length;
+    const qs = state.confirmations.filter(x => !x.withdrawn).length;
+    const collabRow = $("#collab-row");
+    const collabActive = state.collaborationStatus !== "未发起";
+    collabRow.dataset.collabState = state.collaborationStatus;
+    collabRow.dataset.collabActive = collabActive ? "1" : "0";
+    $("#collab-status").textContent = state.collaborationStatus;
+    $("#handler-cell").textContent = state.handler;
+    $$(".shared-collab-handler").forEach(cell => cell.textContent = state.handler);
+    $("#current-user-label").textContent = state.currentUser;
+    $("#collab-summary").textContent = mats || qs ? [mats ? "资料 " + mats + " 项" : "", qs ? "确认 " + qs + " 项" : ""].filter(Boolean).join("，") : "无有效事项";
+    const feedbackSummary = collaborationFeedbackSummary();
+    $("#collab-feedback-content").textContent = feedbackSummary;
+    $("#collab-feedback-tooltip").dataset.full = feedbackSummary;
+    $("#collab-feedback-time").textContent = state.submittedBy ? "2026-08-07 11:26:08" : "-";
+    $("#collab-qc-status").textContent = state.sourceDisposition === "让步接收" ? "合格" : state.sourceDisposition || ({ "待反馈": "已挂起", "已反馈": "待处理", "已撤回": "待处理", "未发起": "待处理" })[state.collaborationStatus] || "待处理";
+    const actions = $("#collab-actions");
+    if (state.collaborationStatus === "待反馈") {
+      const canProcess = state.handler === state.currentUser;
+      const canProxy = state.currentUserInCustomerExperience;
+      const canReassign = canProcess || state.currentUserInModelCenter;
+      const disabled = (allowed, reason) => allowed ? "" : ' disabled title="' + escapeHtml(reason) + '"';
+      actions.innerHTML = '<button class="btn text small" data-go="mes-detail">详情</button>' +
+        '<button class="btn text small changed" data-open="append"' + disabled(canProcess, "仅当前处理人可追加") + '>追加</button>' +
+        '<button class="btn text small changed" data-open="withdraw"' + disabled(canProcess, "仅当前处理人可撤回") + '>撤回</button>' +
+        '<button class="btn text small changed" data-go="cs-proxy"' + disabled(canProxy, "仅客户体验部当前有效成员可代录") + '>代录</button>' +
+        '<button class="btn text small" data-open="reassign"' + disabled(canReassign, "仅当前处理人或模型处理中心成员可重新分配") + '>重新分配</button>';
+    } else if (state.collaborationStatus === "已反馈") {
+      actions.innerHTML = '<button class="btn text small" data-go="mes-detail">详情</button>';
+    } else if (collabActive) {
+      actions.innerHTML = '<button class="btn text small" data-go="mes-detail">详情</button>';
+    } else {
+      actions.innerHTML = "";
+    }
+    renderPendingSourceTask();
+    filterCollabRows();
+  }
+  function renderWithdraw() {}
+  function renderHistory() {
+    const events = [...state.historyEvents];
+    if (!events.length) {
+      $("#history-content").innerHTML = '<div style="padding:24px;text-align:center;color:#8a95a3">暂无模型初检医生协同记录</div>';
+      return;
+    }
+    const first = events[0];
+    const latest = events[events.length - 1];
+    const summary = '<div class="history-round-summary"><span><strong>协同轮次：</strong>第 1 轮</span><span><strong>协同状态：</strong>' + escapeHtml(state.collaborationStatus) + '</span><span><strong>起止时间：</strong>' + escapeHtml(first.at) + ' 至 ' + escapeHtml(latest.at) + '</span></div>';
+    const eventList = events.map(event =>
+      '<section class="history-event"><div class="history-event-head"><span><strong>记录事项：</strong>' + escapeHtml(eventAuditAction(event)) + '</span><span class="history-event-actor"><strong>操作人：</strong>' + escapeHtml(event.actor || "-") + '（' + escapeHtml(event.role || defaultHistoryRole(event.type)) + '）</span><span class="history-event-time"><strong>操作时间：</strong>' + escapeHtml(event.at) + '</span></div><div class="history-detail">' + historyEventDetail(event) + '</div></section>'
+    ).join("");
+    $("#history-content").innerHTML = summary + eventList;
+  }
+  function renderFeedback() {
+    const hasRecord = state.historyEvents.length > 0;
+    $("#collab-log-empty").style.display = hasRecord ? "none" : "block";
+    $("#collab-hang-log").style.display = hasRecord ? "grid" : "none";
+    $("#collab-feedback-log").style.display = hasRecord ? "grid" : "none";
+    if (!hasRecord) return;
+    const first = state.historyEvents[0];
+    const latest = state.historyEvents[state.historyEvents.length - 1];
+    $("#collab-round-start").textContent = first.at;
+    $("#collab-round-status").textContent = state.collaborationStatus;
+    $("#collab-round-latest").textContent = latest.at + " " + eventAuditAction(latest);
+  }
+  function renderTimeline() {
+    const root = $("#timeline-completion");
+    const originRow = $("#timeline-origin-row");
+    const originAction = $("#timeline-origin-action");
+    const allMaterials = state.activeMaterials;
+    const allConfirmations = state.confirmations;
+    const originLabel = "病例资料待完善";
+    originRow.style.display = "grid";
+    originAction.innerHTML = "";
+    if (state.collaborationStatus === "未发起") {
+      root.innerHTML = "";
+      originRow.style.display = "none";
+      return;
+    }
+    if (state.collaborationStatus === "已撤回") {
+      root.innerHTML = '<div class="timeline-row"><div class="timeline-time">2026-08-07 10:20</div><div class="timeline-line"></div><div class="timeline-text changed">该待办已完成核实，无需继续处理</div><div></div></div>';
+      $("#timeline-origin-title").textContent = originLabel + '（' + (state.withdrawnSummary || "本次待处理事项") + '）';
+      return;
+    }
+    if (!state.submittedBy) {
+      root.innerHTML = "";
+      const materials = state.activeMaterials.filter(x => !x.withdrawn);
+      const confirmations = state.confirmations.filter(x => !x.withdrawn);
+      const summary = doctorFacingSummary(materials, confirmations);
+      const entryScene = materials.length ? "pms-material" : "pms-confirm";
+      $("#timeline-origin-title").textContent = originLabel + '（' + summary + '）';
+      originAction.innerHTML = '<button class="btn primary small" data-go="' + entryScene + '">修改订单</button>';
+      return;
+    }
+    let text;
+    if (state.submittedBy === "医生") text = "订单已完善";
+    else text = "该待办已完成核实，无需继续处理";
+    root.innerHTML = '<div class="timeline-row"><div class="timeline-time">2026-08-07 11:26</div><div class="timeline-line"></div><div class="timeline-text changed">' + text + '</div><div></div></div>';
+    $("#timeline-origin-title").textContent = originLabel + '（' + doctorFacingSummary(allMaterials, allConfirmations) + '）';
+  }
+  function renderWorkbench() {
+    const mixedActive = state.collaborationStatus === "待反馈" && !state.submittedBy && activeItems().length > 0;
+    $("#mixed-case-row").style.display = mixedActive ? "grid" : "none";
+    const materials = state.activeMaterials.filter(x => !x.withdrawn);
+    const confirmations = state.confirmations.filter(x => !x.withdrawn);
+    const entryScene = materials.length ? "pms-material" : "pms-confirm";
+    $("#mixed-case-action").dataset.go = entryScene;
+    $("#mixed-case-action").textContent = "修改";
+    $("#mixed-confirm-block").classList.toggle("module-hidden", confirmations.length === 0);
+    $("#proxy-confirm-block").classList.toggle("module-hidden", confirmations.length === 0);
+    $("#proxy-material-section").classList.toggle("module-hidden", materials.length === 0);
+    renderMaterialForms();
+    const count = mixedActive ? 1 : 0;
+    $("#reminder-count").textContent = "您有 " + count + " 个订单需要完善";
+    $("#login-reminder-cases").innerHTML = mixedActive
+      ? '<div class="login-reminder-case"><strong>0807案例A</strong>　首次　病例资料待完善</div>'
+      : '';
+    if (!mixedActive) hideLoginReminder();
+    $("#pending-metric").textContent = mixedActive ? "29" : "28";
+  }
+  function renderOutcome() {
+    $$(".outcome-card").forEach(x => x.classList.toggle("active", x.dataset.outcome === state.selectedOutcome));
+    const root = $("#result-path");
+    const paths = {
+      formal: [
+        ["提交成功", "存在正式资料更新"],
+        ["原任务", "落定质检不通过"],
+        ["现有流转", state.modelUpdated ? "模型时间戳更新，工序重置" : "资料重提"],
+        ["PMS", "关闭本轮待办"]
+      ],
+      none: [
+        ["提交成功", "仅完成确认回复"],
+        ["原任务", "不落质检不通过"],
+        ["模型初检", "恢复待处理"],
+        ["PMS", "关闭本轮待办，不留长期入口"]
+      ],
+      concession: [
+        ["提交成功", "待完善模型未更新"],
+        ["医生确认", "继续使用上一版模型"],
+        ["已有结果", "质检通过 Tab / 状态合格"],
+        ["详情", "让步接收 / 模型不合格"]
+      ],
+      mixed: [
+        ["提交成功", "照片/CT更新，模型未更新"],
+        ["原任务", "落定质检不通过并资料重提"],
+        ["新任务", "关联协同反馈和医生同意"],
+        ["质检", "新资料通过后执行已有让步接收"]
+      ],
+      withdrawn: [
+        ["撤回成功", "医生协同已撤回"],
+        ["协同单", "状态更新为已撤回"],
+        ["原任务", "恢复待处理"],
+        ["PMS", "关闭待办，通知医生与销售"]
+      ]
+    };
+    root.innerHTML = paths[state.selectedOutcome].map(x => '<div class="result-step"><strong>' + x[0] + '</strong><span>' + x[1] + '</span></div>').join("");
+  }
+  function completeMaterial(item, model) {
+    item.dataset.complete = "1";
+    item.classList.remove("target");
+    $(".target-label", item)?.remove();
+    const fileName = originalUploadName(item.dataset.key, item.dataset.ext || (model ? "stl" : "jpg"));
+    $(".item-actions", item).innerHTML = '<span class="item-complete">已上传：' + escapeHtml(fileName) + '</span>';
+    const fileInput = $(".fake-file-input", item);
+    if (fileInput) fileInput.textContent = fileName;
+    const preview = $(".material-preview", item);
+    if (preview) preview.textContent = "已上传，点击可重新替换";
+    state.completed.add(item.dataset.key);
+    state.formalUpdated = true;
+    if (model) state.modelUpdated = true;
+  }
+  function validateAndSubmitMaterials(source) {
+    const mode = source === "客服" ? "proxy" : "doctor";
+    const itemSelector = mode === "proxy" ? ".proxy-material" : ".doctor-material";
+    const error = mode === "proxy" ? $("#proxy-error") : $("#material-submit-error");
+    const items = $$(itemSelector);
+    const incompleteRequired = items.filter(item => item.dataset.model !== "1" && item.dataset.complete !== "1");
+    const incompleteModels = items.filter(item => item.dataset.model === "1" && item.dataset.complete !== "1");
+    const basisOk = validateConfirmationResponses(mode);
+    const evidenceOk = mode !== "proxy" || state.evidence > 0;
+    const ok = incompleteRequired.length === 0 && basisOk && evidenceOk;
+    error.classList.toggle("show", !ok);
+    if (!ok) {
+      const first = incompleteRequired[0] || $(".confirm-block", mode === "proxy" ? $("#cs-proxy") : $("#pms-material")) || error;
+      first.scrollIntoView({ behavior: "smooth", block: "center" });
+      toast(mode === "proxy" ? "请完成代录必填内容" : "请先完成标记的待处理项");
+      return;
+    }
+    if (incompleteModels.length) {
+      state.pendingSubmitSource = source;
+      state.pendingConsentModels = incompleteModels.map(item => item.dataset.key);
+      const names = state.pendingConsentModels.join("、");
+      $("#model-risk-copy").textContent = "本次未上传新的" + names + "，将继续使用当前模型。当前模型可能影响方案准确性或矫治器贴合度，是否继续提交？";
+      openModal("model-risk");
+      return;
+    }
+    state.consentModels = [];
+    submitSuccess(source);
+  }
+  function submitSuccess(source) {
+    const mode = source === "客服" ? "proxy" : "doctor";
+    pushHistoryEvent(source === "客服" ? "客服代录" : "医生提交", {
+      materials: submittedMaterialSnapshot(mode),
+      voluntaryUpdated: [...state.voluntaryUpdated],
+      confirmations: submittedConfirmationSnapshot(mode),
+      feedback: source === "客服" ? $("#proxy-feedback").value.trim() : "",
+      evidence: source === "客服" ? state.evidence : 0,
+      consentModels: [...state.consentModels],
+      formalUpdated: state.formalUpdated,
+      modelUpdated: state.modelUpdated
+    });
+    state.submittedBy = source;
+    state.doctorPageStale = false;
+    state.collaborationStatus = "已反馈";
+    const hasNonModelUpdate = [...new Set([...state.completed, ...state.voluntaryUpdated])].some(name => !name.endsWith("模型"));
+    if (state.modelUpdated) {
+      state.sourceDisposition = "质检不通过";
+      state.selectedOutcome = "formal";
+    } else if (hasNonModelUpdate && state.consentModels.length) {
+      state.sourceDisposition = "质检不通过";
+      state.selectedOutcome = "mixed";
+    } else if (state.consentModels.length) {
+      state.sourceDisposition = "让步接收";
+      state.selectedOutcome = "concession";
+    } else if (hasNonModelUpdate) {
+      state.sourceDisposition = "质检不通过";
+      state.selectedOutcome = "formal";
+    } else {
+      state.sourceDisposition = "";
+      state.selectedOutcome = "none";
+    }
+    const feedbackSummary = collaborationFeedbackSummary();
+    $$(".restored-feedback-content").forEach(node => { node.textContent = feedbackSummary; });
+    $$(".restored-feedback-tooltip").forEach(node => { node.dataset.full = feedbackSummary; });
+    renderCollab();
+    renderTimeline();
+    toast(source === "医生" ? "提交成功，本次待办已完成" : source + "提交成功，医生端待办已关闭");
+    showScene("outcome");
+  }
+  function resetDemo() {
+    state = initialState();
+    if ($("#pending-collab-filter")) $("#pending-collab-filter").value = "all";
+    if ($("#collab-status-filter")) $("#collab-status-filter").value = "all";
+    ["pending-patient-filter", "pending-prescription-filter", "pending-order-filter", "pending-handler-filter"].forEach(id => {
+      const input = $("#" + id);
+      if (input) input.value = "";
+    });
+    $$("#mes-pending-body tr[data-collab-status]").forEach(row => {
+      row.dataset.sourceActive = "1";
+      const handler = $(".pending-handler", row);
+      if (handler) handler.textContent = row.dataset.originalHandler || handler.textContent;
+    });
+    $("#pending-row-0806").dataset.collabStatus = "none";
+    $(".pending-collab-status", $("#pending-row-0806")).textContent = "-";
+    $("#pending-row-0804").dataset.collabStatus = "feedback";
+    $(".pending-collab-status", $("#pending-row-0804")).textContent = "已反馈";
+    pendingActionRow = null;
+    pendingActionType = "";
+    $("#enable-material").checked = false;
+    $("#enable-confirm").checked = false;
+    $("#append-enable-material").checked = false;
+    $("#append-enable-confirm").checked = false;
+    $$(".material-location, .append-location").forEach(input => { input.checked = false; });
+    $$(".material-inline-editor").forEach(editor => editor.remove());
+    $("#init-error").classList.remove("show");
+    $("#append-error").classList.remove("show");
+    syncModuleVisibility();
+    hideLoginReminder();
+    $$(".modal-layer.open").forEach(layer => layer.classList.remove("open"));
+    $("#material-page").classList.remove("show-all");
+    $("#proxy-material-page").classList.remove("show-all");
+    if ($("#pending-only-toggle")) $("#pending-only-toggle").checked = true;
+    if ($("#proxy-pending-only-toggle")) $("#proxy-pending-only-toggle").checked = true;
+    state.orderPageType = "first";
+    syncOrderPageTitle();
+    $("#proxy-feedback").value = "";
+    $("#evidence-count").textContent = "0/9";
+    $$('input[type="radio"]').forEach(x => x.checked = false);
+    $("#result-collab").checked = true;
+    $("#collab-editor").classList.remove("module-hidden");
+    const confirmRows = $$(".confirm-editor-row");
+    confirmRows.slice(1).forEach(row => row.remove());
+    $(".confirm-question", confirmRows[0]).value = "";
+    const appendConfirmRows = $$(".append-confirm-editor-row");
+    appendConfirmRows.slice(1).forEach(row => row.remove());
+    $(".append-confirm-question", appendConfirmRows[0]).value = "";
+    renderMaterialForms();
+    renderCollab();
+    renderTimeline();
+    renderOutcome();
+    filterPendingRows();
+    toast("演示状态已重置");
+    showScene("overview");
+  }
+
+  document.addEventListener("click", event => {
+    const link = event.target.closest("[data-scene]");
+    if (link) {
+      if (link.dataset.orderType) state.orderPageType = link.dataset.orderType;
+      showScene(link.dataset.scene);
+    }
+    const go = event.target.closest("[data-go]");
+    if (go) {
+      if (go.dataset.orderType) state.orderPageType = go.dataset.orderType;
+      showScene(go.dataset.go);
+    }
+    const open = event.target.closest("[data-open]");
+    if (open) {
+      if (open.dataset.open === "reassign" && !event.target.closest("#mes-pending-body")) pendingActionRow = null;
+      if (open.dataset.open === "history-image") {
+        $("#history-image-title").textContent = open.dataset.historyTitle || "协同附件";
+        $("#history-preview-label").textContent = open.dataset.historyLabel || "附件预览";
+      }
+      openModal(open.dataset.open);
+    }
+    const close = event.target.closest("[data-close]");
+    if (close) closeModal(close.dataset.close);
+    if (event.target.matches(".modal-layer") && event.target.dataset.persistent !== "true") event.target.classList.remove("open");
+
+    const doctorWriteAction = event.target.closest(".doctor-upload, .doctor-preview-upload, .voluntary-upload, #doctor-draft, #submit-doctor-material, #submit-doctor-confirm, .confirm-reply-upload");
+    const proxyWriteAction = event.target.closest(".proxy-upload, .proxy-preview-upload, #proxy-draft, #submit-proxy, #add-evidence, .confirm-reply-upload");
+    if ((doctorWriteAction || proxyWriteAction) && state.submittedBy) {
+      toast("该待办已完成核实，无需继续处理");
+      return;
+    }
+    if (doctorWriteAction && state.collaborationStatus === "已撤回") {
+      $("#stale-task-modal").classList.add("open");
+      return;
+    }
+    const staleSubmitAction = event.target.closest("#submit-doctor-material, #submit-doctor-confirm, #submit-proxy");
+    if (staleSubmitAction && state.versionUpdated) {
+      state.pendingRefreshScene = currentScene;
+      syncTaskUpdateNotice(currentScene);
+      toast("请先刷新页面加载最新事项");
+      return;
+    }
+
+    if (event.target.id === "reset-demo") resetDemo();
+    if (event.target.id === "pending-filter-query") filterPendingRows();
+    if (event.target.id === "pending-filter-reset") {
+      $("#pending-collab-filter").value = "all";
+      ["pending-patient-filter", "pending-prescription-filter", "pending-order-filter", "pending-handler-filter"].forEach(id => $("#" + id).value = "");
+      filterPendingRows();
+    }
+    if (event.target.id === "collab-filter-query") filterCollabRows();
+    if (event.target.id === "collab-filter-reset") {
+      $("#collab-status-filter").value = "all";
+      filterCollabRows();
+    }
+    if (["enable-material", "enable-confirm", "append-enable-material", "append-enable-confirm"].includes(event.target.id)) syncModuleVisibility();
+    if (event.target.matches(".material-location, .append-location")) syncMaterialLocation(event.target);
+    if (event.target.classList.contains("material-inline-toggle")) event.target.closest(".material-inline-editor").classList.toggle("collapsed");
+    if (event.target.classList.contains("upload-problem")) {
+      event.target.dataset.uploaded = "1";
+      event.target.textContent = "已插入问题图片（1）";
+      toast("问题图片上传成功");
+    }
+    if (event.target.classList.contains("preview-problem")) openModal("problem-preview");
+    if (event.target.classList.contains("confirmation-basis")) {
+      const response = confirmationResponse(event.target.dataset.confirmMode, event.target.dataset.questionId);
+      response.basis = event.target.value;
+      const question = event.target.closest(".question");
+      $(".confirmation-other", question).style.display = event.target.value === "其他" ? "block" : "none";
+    }
+    const pendingDetail = event.target.closest(".pending-detail");
+    if (pendingDetail) openPendingDetail(pendingDetail.closest("tr"));
+    const pendingReassign = event.target.closest(".pending-reassign");
+    if (pendingReassign) {
+      pendingActionRow = pendingReassign.closest("tr");
+      openModal("reassign");
+    }
+    const pendingHang = event.target.closest(".pending-hang");
+    if (pendingHang) openOrderAction(pendingHang.closest("tr"), "hang");
+    const pendingVoid = event.target.closest(".pending-void");
+    if (pendingVoid) openOrderAction(pendingVoid.closest("tr"), "void");
+    const pendingTarget = event.target.closest("[data-scroll-target]");
+    if (pendingTarget) {
+      $$("#pending-nav button").forEach(button => button.classList.toggle("active", button === pendingTarget));
+      $("#" + pendingTarget.dataset.scrollTarget)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    const pendingNavItem = event.target.closest("[data-scroll-material]");
+    if (pendingNavItem) {
+      $$("#pending-nav button").forEach(button => button.classList.toggle("active", button === pendingNavItem));
+      $("#doctor-item-" + pendingNavItem.dataset.scrollMaterial)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    const proxyPendingNavItem = event.target.closest("[data-scroll-proxy-material]");
+    if (proxyPendingNavItem) {
+      $$("#proxy-pending-nav button").forEach(button => button.classList.toggle("active", button === proxyPendingNavItem));
+      $("#proxy-item-" + proxyPendingNavItem.dataset.scrollProxyMaterial)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    if (event.target.id === "save-collab") {
+      if (state.handler !== state.currentUser) {
+        toast("当前处理人已变更，请刷新后重试");
+        return;
+      }
+      const qcResult = $('input[name="qc-result"]:checked')?.value;
+      if (qcResult && qcResult !== "发起医生协同") {
+        state.sourceDisposition = qcResult;
+        renderCollab();
+        toast(qcResult + "保存成功，订单已按原有流程离开待处理列表");
+        showScene("mes-list");
+        return;
+      }
+      const materialEnabled = $("#enable-material").checked;
+      const confirmEnabled = $("#enable-confirm").checked;
+      const selectedMaterials = materialEnabled ? $$(".material-location:checked") : [];
+      const confirmRows = confirmEnabled ? $$(".confirm-editor-row") : [];
+      const materialValid = !materialEnabled || validateMaterialEntries(selectedMaterials);
+      const confirmValid = !confirmEnabled || (confirmRows.length > 0 && confirmRows.every(row => normalizedRichText($(".confirm-question", row)?.value)));
+      const valid = (materialEnabled || confirmEnabled) && materialValid && confirmValid;
+      $("#init-error").classList.toggle("show", !valid);
+      $(".structured-materials", $("#material-editor-section")).classList.toggle("field-invalid", materialEnabled && selectedMaterials.length === 0);
+      confirmRows.forEach(row => $(".rich-editor", row).classList.toggle("field-invalid", !normalizedRichText($(".confirm-question", row).value)));
+      if (!valid) return;
+      state.activeMaterials = selectedMaterials.map((input, i) => ({ id: "m" + (i + 1), ...materialEntry(input), withdrawn: false }));
+      state.confirmations = confirmEnabled ? [{ id: "q1", question: $(".confirm-question", confirmRows[0]).value.trim(), issueImage: $(".upload-problem", confirmRows[0])?.dataset.uploaded === "1", withdrawn: false }] : [];
+      state.doctorConfirmResponses = {};
+      state.proxyConfirmResponses = {};
+      state.historyEvents = [];
+      state.versionUpdated = false;
+      state.formContentLoaded = false;
+      pushHistoryEvent("发起医生协同", {
+        materials: cloneMaterials(state.activeMaterials),
+        confirmations: cloneConfirmations(state.confirmations)
+      });
+      state.collaborationStatus = "待反馈";
+      state.sourceDisposition = "";
+      toast("保存成功：已生成一张医生协同单并挂起源任务");
+      showScene("mes-collab");
+    }
+    if (event.target.id === "save-append") {
+      if (state.handler !== state.currentUser) {
+        closeModal("append");
+        toast("当前处理人已变更，请刷新后重试");
+        return;
+      }
+      const materialEnabled = $("#append-enable-material").checked;
+      const confirmEnabled = $("#append-enable-confirm").checked;
+      const selectedMaterials = materialEnabled ? $$(".append-location:checked") : [];
+      const confirmRows = confirmEnabled ? $$(".append-confirm-editor-row") : [];
+      const materialValid = !materialEnabled || validateMaterialEntries(selectedMaterials);
+      const confirmValid = !confirmEnabled || (confirmRows.length > 0 && confirmRows.every(row => normalizedRichText($(".append-confirm-question", row)?.value)));
+      const valid = (materialEnabled || confirmEnabled) && materialValid && confirmValid;
+      $("#append-error").classList.toggle("show", !valid);
+      $(".structured-materials", $("#append-material-section")).classList.toggle("field-invalid", materialEnabled && selectedMaterials.length === 0);
+      confirmRows.forEach(row => $(".rich-editor", row).classList.toggle("field-invalid", !normalizedRichText($(".append-confirm-question", row).value)));
+      if (!valid) return;
+      const materialIdBase = state.activeMaterials.length;
+      const addedMaterials = selectedMaterials.map((input, index) => ({ id: "m" + (materialIdBase + index + 1), ...materialEntry(input), withdrawn: false }));
+      state.activeMaterials.push(...addedMaterials);
+      let addedConfirmations = [];
+      if (confirmEnabled) {
+        const appendedText = $(".append-confirm-question", confirmRows[0]).value.trim();
+        const appendedImage = $(".upload-problem", confirmRows[0])?.dataset.uploaded === "1";
+        const confirmation = { id: "q" + (state.confirmations.length + 1), question: appendedText, issueImage: appendedImage, withdrawn: false };
+        state.confirmations.push(confirmation);
+        addedConfirmations = [confirmation];
+      }
+      pushHistoryEvent("追加待处理事项", {
+        materials: cloneMaterials(addedMaterials),
+        confirmations: cloneConfirmations(addedConfirmations)
+      });
+      state.versionUpdated = true;
+      closeModal("append");
+      renderCollab();
+      syncTaskUpdateNotice(currentScene);
+      toast("追加成功：已更新同一待办，未重复发送通知");
+    }
+    if (event.target.id === "confirm-withdraw") {
+      if (state.handler !== state.currentUser) {
+        closeModal("withdraw");
+        toast("当前处理人已变更，请刷新后重试");
+        return;
+      }
+      if (state.submittedBy) {
+        closeModal("withdraw");
+        toast("医生或客服已完成提交，本轮协同无法撤回");
+        return;
+      }
+      const activeMaterials = state.activeMaterials.filter(x => !x.withdrawn);
+      const activeConfirmations = state.confirmations.filter(x => !x.withdrawn);
+      state.withdrawnSummary = doctorFacingSummary(activeMaterials, activeConfirmations);
+      pushHistoryEvent("撤回", { summary: state.withdrawnSummary });
+      state.activeMaterials.forEach(x => { x.withdrawn = true; });
+      state.confirmations.forEach(x => { x.withdrawn = true; });
+      state.versionUpdated = true;
+      state.doctorPageStale = true;
+      state.collaborationStatus = "已撤回";
+      state.selectedOutcome = "withdrawn";
+      closeModal("withdraw");
+      renderCollab();
+      renderWorkbench();
+      renderTimeline();
+      toast("撤回成功，源任务恢复待处理");
+    }
+    if (event.target.id === "refresh-withdrawn-task") {
+      $("#stale-task-modal").classList.remove("open");
+      renderTimeline();
+      showScene("pms-timeline");
+    }
+    if (event.target.id === "return-to-material") {
+      closeModal("model-risk");
+      state.pendingSubmitSource = "";
+      state.pendingConsentModels = [];
+      toast("已返回完善，页面内容已保留");
+    }
+    if (event.target.id === "continue-model-submit") {
+      const source = state.pendingSubmitSource;
+      state.consentModels = [...state.pendingConsentModels];
+      state.pendingSubmitSource = "";
+      state.pendingConsentModels = [];
+      closeModal("model-risk");
+      submitSuccess(source);
+    }
+    if (event.target.matches(".suggestion")) {
+      $("#handler-search").value = event.target.dataset.person;
+      $("#handler-suggestions").classList.remove("show");
+    }
+    if (event.target.id === "save-reassign") {
+      const person = $("#handler-search").value.trim();
+      const matched = $$("#handler-suggestions .suggestion").some(button => button.dataset.person === person);
+      $("#reassign-error").textContent = person ? "请从搜索结果中选择新处理人。" : "请选择新处理人。";
+      $("#reassign-error").classList.toggle("show", !person || !matched);
+      if (!person || !matched) return;
+      const oldHandler = pendingActionRow ? getPendingRowData(pendingActionRow).handler : state.handler;
+      if (oldHandler !== state.currentUser && !state.currentUserInModelCenter) {
+        closeModal("reassign");
+        toast("仅当前处理人或模型处理中心成员可重新分配");
+        return;
+      }
+      if (pendingActionRow) {
+        $(".pending-handler", pendingActionRow).textContent = person;
+        if (pendingActionRow.id === "restored-pending-row" || pendingActionRow.dataset.sharedCollab === "1") state.handler = person;
+      } else {
+        state.handler = person;
+        if (state.collaborationStatus !== "未发起") pushHistoryEvent("重新分配", { from: oldHandler, to: person });
+      }
+      closeModal("reassign");
+      renderCollab();
+      filterPendingRows();
+      pendingActionRow = null;
+      toast("重新分配成功：处理权和反馈回流对象已同步迁移");
+    }
+    if (event.target.id === "confirm-order-action") {
+      const reason = $("#order-action-reason").value.trim();
+      $("#order-action-error").classList.toggle("show", !reason);
+      if (!reason || !pendingActionRow) return;
+      const actionName = pendingActionType === "hang" ? "挂起" : "作废";
+      pendingActionRow.dataset.sourceActive = "0";
+      if (pendingActionRow.id === "restored-pending-row") state.sourceDisposition = actionName;
+      closeModal("order-action");
+      filterPendingRows();
+      pendingActionRow = null;
+      pendingActionType = "";
+      toast(actionName + "成功，订单已离开待处理列表");
+    }
+    if (event.target.classList.contains("confirm-reply-upload")) {
+      const response = confirmationResponse(event.target.dataset.confirmMode, event.target.dataset.questionId);
+      response.images += 1;
+      $(".confirm-reply-count", event.target.parentElement).textContent = response.images + " 张";
+      toast("回复图片上传成功");
+    }
+    if (event.target.id === "submit-doctor-confirm") {
+      if (state.versionUpdated) {
+        state.pendingRefreshScene = currentScene;
+        syncTaskUpdateNotice(currentScene);
+        return;
+      }
+      const ok = validateConfirmationResponses("doctor");
+      $("#doctor-confirm-error").classList.toggle("show", !ok);
+      if (!ok) return;
+      state.formalUpdated = false;
+      submitSuccess("医生");
+    }
+    if (event.target.id === "refresh-updated-task") {
+      const refreshScene = state.pendingRefreshScene || currentScene;
+      captureConfirmationResponses();
+      state.versionUpdated = false;
+      state.pendingRefreshScene = "";
+      $("#task-update-notice").classList.remove("open");
+      renderMaterialForms();
+      state.formContentLoaded = true;
+      if (refreshScene === "pms-confirm" && state.activeMaterials.some(item => !item.withdrawn)) showScene("pms-material");
+      else showScene(refreshScene);
+      toast("已暂存当前内容并加载最新事项");
+    }
+    if (event.target.classList.contains("doctor-upload")) {
+      const item = event.target.closest(".doctor-material");
+      completeMaterial(item, event.target.dataset.model === "1");
+      toast("上传成功，待处理标记已取消");
+    }
+    if (event.target.classList.contains("doctor-preview-upload")) {
+      const item = event.target.closest(".material-item");
+      if (item.classList.contains("doctor-material")) {
+        completeMaterial(item, false);
+        toast("上传成功，待处理标记已取消");
+      } else {
+        state.formalUpdated = true;
+        state.voluntaryUpdated.add(item.dataset.key);
+        event.target.textContent = "已更新，点击可重新替换";
+        toast("资料更新成功");
+      }
+    }
+    if (event.target.classList.contains("voluntary-upload")) {
+      state.formalUpdated = true;
+      if (event.target.dataset.model === "1") state.modelUpdated = true;
+      const item = event.target.closest(".material-item");
+      if (item?.dataset.key) state.voluntaryUpdated.add(item.dataset.key);
+      event.target.textContent = "已更新：原始文件名";
+      event.target.disabled = true;
+      toast("资料更新成功");
+    }
+    if (event.target.id === "doctor-draft") toast("暂存成功：未结束本轮协同");
+    if (event.target.id === "submit-doctor-material") {
+      if (state.versionUpdated) {
+        state.pendingRefreshScene = currentScene;
+        syncTaskUpdateNotice(currentScene);
+        return;
+      }
+      validateAndSubmitMaterials("医生");
+    }
+    if (event.target.classList.contains("proxy-upload")) {
+      const item = event.target.closest(".proxy-material");
+      completeMaterial(item, event.target.dataset.model === "1");
+    }
+    if (event.target.classList.contains("proxy-preview-upload")) {
+      const item = event.target.closest(".material-item");
+      if (item.classList.contains("proxy-material")) {
+        completeMaterial(item, false);
+      } else {
+        state.formalUpdated = true;
+        state.voluntaryUpdated.add(item.dataset.key);
+        event.target.textContent = "已更新，点击可重新替换";
+        toast("资料更新成功");
+      }
+    }
+    if (event.target.id === "add-evidence") {
+      if (state.evidence >= 9) return toast("最多上传 9 张沟通截图");
+      state.evidence += 1;
+      $("#evidence-count").textContent = state.evidence + "/9";
+    }
+    if (event.target.id === "proxy-draft") toast("暂存成功：未结束本轮协同");
+    if (event.target.id === "submit-proxy") {
+      validateAndSubmitMaterials("客服");
+    }
+    const outcome = event.target.closest("[data-outcome]");
+    if (outcome) {
+      state.selectedOutcome = outcome.dataset.outcome;
+      renderOutcome();
+    }
+  });
+
+  document.addEventListener("change", event => {
+    if (event.target.id === "pending-collab-filter") filterPendingRows();
+    if (event.target.id === "collab-status-filter") filterCollabRows();
+    if (event.target.classList.contains("confirmation-basis")) {
+      const response = confirmationResponse(event.target.dataset.confirmMode, event.target.dataset.questionId);
+      response.basis = event.target.value;
+      const question = event.target.closest(".question");
+      $(".confirmation-other", question).style.display = event.target.value === "其他" ? "block" : "none";
+    }
+    if (event.target.id === "pending-only-toggle") {
+      $("#material-page").classList.toggle("show-all", !event.target.checked);
+      renderMaterialForms();
+    }
+    if (event.target.id === "proxy-pending-only-toggle") {
+      $("#proxy-material-page").classList.toggle("show-all", !event.target.checked);
+      renderMaterialForms();
+    }
+    if (event.target.name === "qc-result") {
+      $("#collab-editor").classList.toggle("module-hidden", event.target.value !== "发起医生协同");
+    }
+  });
+  document.addEventListener("input", event => {
+    if (event.target.classList.contains("confirmation-other")) {
+      confirmationResponse(event.target.dataset.confirmMode, event.target.dataset.questionId).other = event.target.value;
+    }
+  });
+  $("#handler-search").addEventListener("input", event => {
+    const keyword = event.target.value.trim();
+    const currentHandler = $("#current-handler-value").value;
+    $$("#handler-suggestions .suggestion").forEach(button => {
+      const duplicate = button.id !== "current-handler-suggestion" && button.dataset.person === currentHandler;
+      button.hidden = duplicate || (keyword && !button.dataset.person.includes(keyword));
+    });
+    $("#handler-suggestions").classList.add("show");
+  });
+
+  const hashScene = new URLSearchParams(location.hash.replace(/^#/, "")).get("scene");
+  syncModuleVisibility();
+  showScene(sceneMeta[hashScene] ? hashScene : "overview");
+  renderCollab();
+  renderTimeline();
+  renderOutcome();
+</script>
+</body>
+</html>
