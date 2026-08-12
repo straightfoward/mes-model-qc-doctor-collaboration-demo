@@ -451,16 +451,16 @@
                 <g id="swim-waiting" transform="translate(145 276)"><rect class="swim-node changed-node" width="296" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">3</text><text class="swim-title" x="42" y="22">源任务挂起，协同待反馈</text><text class="swim-copy" x="42" y="42">生成PMS待办并暂停模型初检时限</text><text class="swim-copy" x="42" y="56">操作信息生成一轮协同记录</text></g>
                 <g id="swim-wait-manage" transform="translate(145 370)"><rect class="swim-node changed-node" width="296" height="82"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5A</text><text class="swim-title" x="42" y="22">追加 / 重新分配（可选）</text><text class="swim-copy" x="42" y="42">追加：更新同一待办并保留医生草稿</text><text class="swim-copy" x="42" y="57">重新分配：更新当前处理人</text><text class="swim-copy" x="42" y="72">完成后协同仍为待反馈</text></g>
                 <g id="swim-withdraw-terminal" transform="translate(145 480)"><rect class="swim-node changed-node" width="296" height="70"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5D</text><text class="swim-title" x="42" y="22">撤回协同（可选终止）</text><text class="swim-copy" x="42" y="43">协同转已撤回，源任务恢复待处理</text><text class="swim-copy" x="42" y="59">关闭 PMS 待办，不进入第 8、9 步</text></g>
-                <g id="swim-submit-gate" transform="translate(650 481)"><rect class="swim-node changed-node" width="320" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">7</text><text class="swim-title" x="42" y="20">MES 校验提交并锁定首次成功结果</text><text class="swim-copy" x="42" y="40">医生 / 客服提交互斥，首次成功提交生效</text><text class="swim-copy" x="42" y="55">协同转已反馈；校验失败不改变协同状态</text></g>
+                <g id="swim-submit-gate" transform="translate(650 430)"><rect class="swim-node changed-node" width="390" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">7</text><text class="swim-title" x="42" y="20">MES 校验提交并锁定首次成功结果</text><text class="swim-copy" x="42" y="40">医生 / 客服提交互斥，首次成功提交生效</text><text class="swim-copy" x="42" y="55">协同转已反馈；校验失败不改变协同状态</text></g>
                 <g id="swim-qc-handling" transform="translate(145 565)"><rect class="swim-node result-node" width="296" height="72"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">9</text><text class="swim-title" x="42" y="22">质检处理需复检的回流任务</text><text class="swim-copy" x="42" y="42">核对协同反馈、确认结果及资料变化</text><text class="swim-copy" x="42" y="59" style="font-size:10.5px">[已有]通过 / 不通过 / 让步接收；或再次发起协同</text></g>
-                <g id="swim-result" transform="translate(490 553)"><rect class="swim-node changed-node" width="630" height="92"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">8</text><text class="swim-title" x="42" y="20">MES 按首次有效提交执行唯一系统流转</text><text class="swim-copy" x="42" y="38" style="font-size:9.3px">① 上/下颌模型有更新 → 质检不通过＋[已有]工序重置</text><text class="swim-copy" x="42" y="52" style="font-size:9.3px">② 模型未更新、照片/CT有更新 → 质检不通过＋[已有]资料重提；同意沿用记录带入新任务</text><text class="swim-copy" x="42" y="66" style="font-size:9.3px">③ 无资料更新，仅回复普通确认问题 → 源任务恢复待处理</text><text class="swim-copy" x="42" y="80" style="font-size:9.3px">④ 待完善模型未更新、医生同意沿用且无其他资料更新 → 自动落[已有]让步接收</text></g>
+                <g id="swim-result" transform="translate(490 551)"><rect class="swim-node changed-node" width="470" height="98"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">8</text><text class="swim-title" x="42" y="18">MES 按首次有效提交执行唯一系统流转</text><text class="swim-copy" x="42" y="33" style="font-size:9px">① 上/下颌模型有更新 → 质检不通过＋[已有]工序重置</text><text class="swim-copy" x="42" y="45" style="font-size:9px">② 模型未更新、照片/CT有更新 → 质检不通过＋[已有]资料重提</text><text class="swim-copy" x="56" y="57" style="font-size:9px">（同意沿用记录带入新任务）</text><text class="swim-copy" x="42" y="69" style="font-size:9px">③ 无资料更新，仅回复普通确认问题 → 源任务恢复待处理</text><text class="swim-copy" x="42" y="81" style="font-size:9px">④ 待完善模型未更新、医生同意沿用且无其他资料更新</text><text class="swim-copy" x="56" y="93" style="font-size:9px">→ 自动落[已有]让步接收</text></g>
 
                 <g transform="translate(490 662)"><rect class="swim-node changed-node" width="280" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5B</text><text class="swim-title" x="42" y="20">点击修改并处理全部有效事项</text><text class="swim-copy" x="42" y="38">确认问题、更新资料或确认继续使用模型</text></g>
                 <g transform="translate(490 725)"><rect class="swim-node changed-node" width="280" height="42"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6B</text><text class="swim-title" x="42" y="20">医生提交</text><text class="swim-copy" x="108" y="20">回传回复、资料与图片</text></g>
                 <g transform="translate(490 775)"><rect class="swim-node" width="280" height="32"/><circle class="swim-step" cx="20" cy="16" r="12"/><text class="swim-step-text" x="20" y="16">8A</text><text class="swim-title" x="42" y="16">关闭待办并更新时间轴</text></g>
                 <g transform="translate(490 830)"><rect class="swim-node" width="280" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">4A</text><text class="swim-title" x="42" y="20">收到企微待完善提醒</text><text class="swim-copy" x="42" y="38">按指引进入工作台待完善病例</text></g>
 
-                <g transform="translate(835 370)"><rect class="swim-node changed-node" width="280" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6C</text><text class="swim-title" x="42" y="22">客服代录</text><text class="swim-copy" x="42" y="42">复用医生表单录入反馈和资料</text><text class="swim-copy" x="42" y="56">上传沟通截图并提交</text></g>
+                <g transform="translate(835 340)"><rect class="swim-node changed-node" width="280" height="66"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">6C</text><text class="swim-title" x="42" y="22">客服代录</text><text class="swim-copy" x="42" y="42">复用医生表单录入反馈和资料</text><text class="swim-copy" x="42" y="56">上传沟通截图并提交</text></g>
                 <g transform="translate(835 830)"><rect class="swim-node" width="280" height="48"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">5C</text><text class="swim-title" x="42" y="20">通过企微线下收到医生反馈</text><text class="swim-copy" x="42" y="38">由客户体验部成员进入 MES 代录</text></g>
 
                 <g transform="translate(1180 825)"><rect class="swim-node" width="296" height="44"/><circle class="swim-step" cx="20" cy="20" r="13"/><text class="swim-step-text" x="20" y="20">4B</text><text class="swim-title" x="42" y="20">收到首次协同跟进通知</text><text class="swim-copy" x="42" y="37">协助关注医生处理进度</text></g>
@@ -470,20 +470,20 @@
                 <path class="swim-arrow branch" data-flow="wait-manage" d="M293 342 V370"/>
                 <path class="swim-arrow branch" data-flow="wait-withdraw" d="M145 330 H130 V515 H145"/><text class="swim-branch-label" x="134" y="470">撤回</text>
 
-                <path class="swim-arrow branch" data-flow="doctor-reminder" d="M441 330 H478 V900 H580 V878"/><text class="swim-branch-label" x="486" y="894">线上提醒</text>
+                <path class="swim-arrow branch" data-flow="doctor-reminder" d="M441 330 H478 V900 H580 V878"/><text class="swim-branch-label" x="486" y="352">线上提醒</text>
                 <path class="swim-arrow branch" data-flow="sales-followup" d="M441 318 H1328 V825"/><text class="swim-branch-label" x="1038" y="312">销售跟进通知</text>
 
                 <path class="swim-arrow" data-flow="reminder-to-doctor-form" d="M590 830 V710"/>
                 <path class="swim-arrow" data-flow="doctor-form-to-submit" d="M690 710 V725"/>
-                <path class="swim-arrow" data-flow="doctor-submit-result" d="M770 746 H1128 V528 H970"/>
+                <path class="swim-arrow" data-flow="doctor-submit-result" d="M770 746 H1040 V496"/>
                 <path class="swim-arrow branch" data-flow="offline-feedback" d="M770 854 H835"/><text class="swim-branch-label" x="778" y="846">线下反馈</text>
-                <path class="swim-arrow" data-flow="feedback-to-proxy" d="M1115 854 H1140 V403 H1115"/>
-                <path class="swim-arrow" data-flow="proxy-submit-result" d="M900 436 V481"/>
-                <path class="swim-arrow" data-flow="submit-gate-to-result" d="M810 547 V553"/>
+                <path class="swim-arrow" data-flow="feedback-to-proxy" d="M1115 854 H1140 V373 H1115"/>
+                <path class="swim-arrow" data-flow="proxy-submit-result" d="M975 406 V430"/>
+                <path class="swim-arrow" data-flow="submit-gate-to-result" d="M800 496 V551"/>
 
                 <path class="swim-arrow" data-flow="result-to-qc-handling" d="M490 601 H441"/><text class="swim-branch-label" x="449" y="594">需复检</text>
                 <path class="swim-arrow" data-flow="result-to-timeline" d="M805 645 V791 H770"/>
-                <path class="swim-arrow branch" data-flow="result-to-sales-completion" d="M1120 601 H1168 V912 H1180"/>
+                <path class="swim-arrow branch" data-flow="result-to-sales-completion" d="M960 601 H1168 V912 H1180"/>
               </svg>
             </div>
           </div>
