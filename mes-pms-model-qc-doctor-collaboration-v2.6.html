@@ -44,6 +44,8 @@
     .demo-title p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
     .top-actions { display: flex; align-items: center; gap: 8px; }
     .role-tag { padding: 4px 8px; color: #30465b; background: #edf2f6; border: 1px solid #d5dee7; border-radius: 3px; font-size: 12px; }
+    .demo-role-control { display: flex; align-items: center; gap: 6px; color: #475467; font-size: 12px; }
+    .demo-role-select { min-height: 28px; padding: 3px 26px 3px 8px; color: #344054; background: #fff; border: 1px solid #d5dee7; border-radius: 3px; }
     .scene { display: none; min-height: calc(100vh - 64px); }
     .scene.active { display: block; }
     .canvas { min-height: calc(100vh - 64px); padding: 14px; overflow: auto; }
@@ -396,6 +398,7 @@
         <p id="scene-subtitle">MES 发起一张协同单，PMS 或客服一次处理，按资料更新情况回流。</p>
       </div>
       <div class="top-actions">
+        <label class="demo-role-control">演示身份<select class="demo-role-select" id="demo-role-select"><option value="qc">质检：张吴秀</option><option value="cs">客服：刘雨田</option></select></label>
         <span class="role-tag" id="role-tag">跨系统</span>
         <button class="btn small" id="reset-demo">重置演示</button>
       </div>
@@ -620,8 +623,7 @@
               <table class="data">
                 <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th class="changed">协同状态</th><th class="changed">事项摘要</th><th class="changed">协同反馈内容</th><th class="changed">发起时间</th><th class="changed">反馈时间</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>预计出方案日期</th><th>设计加急</th><th>当前处理人</th><th>任务类型</th><th>质检状态</th><th>操作</th></tr></thead>
                 <tbody id="collab-body">
-                  <tr id="collab-row" data-collab-state="未发起" data-collab-active="0" style="display:none"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td><span class="status current changed" id="collab-status">待反馈</span></td><td class="changed" id="collab-summary">资料 2 项，确认 1 项</td><td><div class="feedback-tooltip changed" id="collab-feedback-tooltip" data-full="-"><span class="feedback-clamp" id="collab-feedback-content">-</span></div></td><td class="changed">2026-08-07 10:06:20</td><td class="changed" id="collab-feedback-time">-</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td>2026-08-10 17:30:00</td><td>否</td><td id="handler-cell">张吴秀</td><td>新病例</td><td id="collab-qc-status">已挂起</td><td><div class="table-actions" id="collab-actions"></div></td></tr>
-                  <tr data-collab-state="已反馈"><td>P2026080500128</td><td>LS01P2026080500128</td><td>悦见示范诊所</td><td>李医生</td><td>0805案例C</td><td><span class="status changed">已反馈</span></td><td class="changed">确认 1 项</td><td><div class="feedback-tooltip changed" data-full="确认：以口扫为准 (质检发起：请确认后续设计资料依据)"><span class="feedback-clamp">确认：以口扫为准 (质检发起：请确认后续设计资料依据)</span></div></td><td class="changed">2026-08-05 13:18:44</td><td class="changed">2026-08-05 15:07:12</td><td>重启</td><td>阶段3</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-05 12:42:09</td><td>2026-08-08 18:00:00</td><td>否</td><td>王晨豪</td><td>新病例</td><td>待处理</td><td><button class="btn text small">详情</button></td></tr>
+                  <tr id="collab-row" data-collab-state="待反馈" data-collab-active="1"><td>P2026080500128</td><td>LS01P2026080500128</td><td>悦见示范诊所</td><td>李医生</td><td>0805案例C</td><td><span class="status current changed" id="collab-status">待反馈</span></td><td class="changed" id="collab-summary">资料 2 项，确认 1 项</td><td><div class="feedback-tooltip changed" id="collab-feedback-tooltip" data-full="-"><span class="feedback-clamp" id="collab-feedback-content">-</span></div></td><td class="changed">2026-08-05 13:18:44</td><td class="changed" id="collab-feedback-time">-</td><td>重启</td><td>阶段3</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-05 12:42:09</td><td>2026-08-08 18:00:00</td><td>否</td><td id="handler-cell">张吴秀</td><td>新病例</td><td id="collab-qc-status">已挂起</td><td><div class="table-actions" id="collab-actions"></div></td></tr>
                   <tr class="pending-filter-empty" id="collab-filter-empty"><td colspan="21">暂无符合当前协同状态的记录</td></tr>
                 </tbody>
               </table>
@@ -654,8 +656,8 @@
               <table class="data">
                 <thead><tr><th>处方号</th><th>订单号码</th><th>诊所名称</th><th>医生姓名</th><th>患者姓名</th><th>订单类型</th><th>订单阶段</th><th>产品系列</th><th>牙颌模型</th><th>提交质检日期</th><th>预计出方案日期</th><th>设计加急</th><th>处理人</th><th>任务类型</th><th>质检状态</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr data-shared-collab="1" data-doctor="悦见测试" data-patient="0807案例A" data-qc-status="已挂起" data-collab-status="待反馈"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td>2026-08-10 17:30:00</td><td>否</td><td class="pending-handler shared-collab-handler">张吴秀</td><td>新病例</td><td>已挂起</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
-                  <tr data-doctor="王医生" data-patient="0803案例E" data-qc-status="已挂起" data-collab-status="-"><td>P2026080300109</td><td>LS01P2026080300109</td><td>悦见示范诊所</td><td>王医生</td><td>0803案例E</td><td>重启</td><td>阶段2</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-03 10:18:26</td><td>2026-08-06 18:00:00</td><td>否</td><td class="pending-handler">王晨豪</td><td>新病例</td><td>已挂起</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
+                  <tr data-shared-collab="1" data-doctor="悦见测试" data-patient="0807案例A" data-qc-status="已挂起" data-collab-status="待反馈"><td>P2026080700201</td><td>LS01P2026080700201</td><td>上海测试认证客户005</td><td>悦见测试</td><td>0807案例A</td><td>首次</td><td>阶段1</td><td>悦见·专业版</td><td>口扫模型</td><td>2026-08-07 09:32:18</td><td>2026-08-10 17:30:00</td><td>否</td><td class="pending-handler shared-collab-handler">张吴秀</td><td>新病例</td><td>已挂起</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small pending-resume">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
+                  <tr data-doctor="王医生" data-patient="0803案例E" data-qc-status="已挂起" data-collab-status="-"><td>P2026080300109</td><td>LS01P2026080300109</td><td>悦见示范诊所</td><td>王医生</td><td>0803案例E</td><td>重启</td><td>阶段2</td><td>悦见4D</td><td>石膏模型</td><td>2026-08-03 10:18:26</td><td>2026-08-06 18:00:00</td><td>否</td><td class="pending-handler">王晨豪</td><td>新病例</td><td>已挂起</td><td class="table-actions"><button class="btn text small pending-detail">详情</button><button class="btn text small pending-resume">恢复</button><button class="btn text small pending-reassign changed">重新分配</button></td></tr>
                 </tbody>
               </table>
             </div>
@@ -732,7 +734,7 @@
               <div class="workbench-panel"><h2>待确认 方案</h2><div class="case-list"><div class="case-row"><div class="avatar">患</div><div class="case-main"><strong>0711AUTO69g</strong><span>首次　方案待确认</span></div><div>悦见4D</div><div class="case-summary">方案确认</div><button class="case-action">3D动画</button></div></div></div>
               <div class="workbench-panel"><h2 class="changed">待完善 病例</h2><div class="case-list">
                 <div class="case-row" id="mixed-case-row"><div class="avatar">A</div><div class="case-main"><strong>0807案例A</strong><span>首次　病例资料待完善</span></div><div>悦见·专业版</div><button class="case-action" id="mixed-case-action" data-go="pms-material" data-order-type="first">修改</button></div>
-                <div class="case-row"><div class="avatar">B</div><div class="case-main"><strong>0805案例C</strong><span>重启　病例资料待完善</span></div><div>悦见4D</div><button class="case-action" data-go="pms-confirm">修改</button></div>
+                <div class="case-row"><div class="avatar">B</div><div class="case-main"><strong>0803案例E</strong><span>首次　病例资料待完善</span></div><div>悦见·专业版</div><button class="case-action existing-case-action">修改</button></div>
               </div></div>
             </div>
           </div>
@@ -1008,7 +1010,26 @@
     "CBCT": "CBCT 文件不完整，请重新上传完整影像资料。"
   };
 
+  const defaultCollaborationOrder = {
+    prescription: "P2026080500128",
+    order: "LS01P2026080500128",
+    clinic: "悦见示范诊所",
+    doctor: "李医生",
+    patient: "0805案例C",
+    orderType: "重启",
+    stage: "阶段3",
+    product: "悦见4D",
+    model: "石膏模型",
+    submittedAt: "2026-08-05 12:42:09",
+    expectedAt: "2026-08-08 18:00:00",
+    urgent: "否",
+    handler: "张吴秀",
+    taskType: "新病例"
+  };
+
   const initialState = () => ({
+    order: { ...defaultCollaborationOrder },
+    sourceRowId: "",
     activeMaterials: [
       { id: "m1", type: "面像照", target: "正面像", desc: "正面像模糊，无法判断面中线，请重新拍摄清晰的正面像。", issueImage: true, withdrawn: false },
       { id: "m2", type: "牙颌数据模型", target: "上颌模型", desc: "上颌口扫存在孔洞，请重新扫描并上传完整模型。", issueImage: false, withdrawn: false }
@@ -1017,6 +1038,8 @@
       { id: "q1", question: "后续设计请确认以口扫、照片、模型还是 CT 为准。", issueImage: true, withdrawn: false }
     ],
     collaborationStatus: "待反馈",
+    initiatedAt: "2026-08-05 13:18:44",
+    feedbackAt: "",
     handler: "张吴秀",
     versionUpdated: false,
     submittedBy: "",
@@ -1030,13 +1053,23 @@
     evidence: 0,
     doctorConfirmResponses: {},
     proxyConfirmResponses: {},
-    historyEvents: [],
+    historyEvents: [{
+      type: "发起医生协同",
+      actor: "张吴秀",
+      role: "质检",
+      at: "2026-08-05 13:18:44",
+      materials: [
+        { id: "m1", type: "面像照", target: "正面像", desc: "正面像模糊，无法判断面中线，请重新拍摄清晰的正面像。", issueImage: true },
+        { id: "m2", type: "牙颌数据模型", target: "上颌模型", desc: "上颌口扫存在孔洞，请重新扫描并上传完整模型。", issueImage: false }
+      ],
+      confirmations: [{ id: "q1", question: "后续设计请确认以口扫、照片、模型还是 CT 为准。", issueImage: true }]
+    }],
     selectedOutcome: "formal",
     contextMode: "mixed",
     currentUser: "张吴秀",
     currentUserInModelCenter: true,
     currentUserInCustomerExperience: false,
-    orderPageType: "first",
+    orderPageType: "restart",
     loginReminderShown: false,
     doctorPageStale: false,
     withdrawnSummary: "",
@@ -1086,8 +1119,11 @@
     if ($("#pending-result-count")) $("#pending-result-count").textContent = visibleCount;
   }
   function renderPendingSourceTask() {
-    const row = $("#restored-pending-row");
-    if (!row) return;
+    const row = state.sourceRowId ? $("#" + state.sourceRowId) : null;
+    if (!row) {
+      filterPendingRows();
+      return;
+    }
     const sourceActive = state.collaborationStatus === "未发起"
       || state.collaborationStatus === "已撤回"
       || (state.collaborationStatus === "已反馈" && state.sourceDisposition !== "让步接收");
@@ -1095,8 +1131,15 @@
     const hasWithdrawn = state.collaborationStatus === "已撤回";
     row.dataset.sourceActive = sourceActive ? "1" : "0";
     row.dataset.collabStatus = hasFeedback ? "feedback" : hasWithdrawn ? "withdrawn" : "none";
-    $("#restored-collab-status").textContent = hasFeedback ? "已反馈" : hasWithdrawn ? "已撤回" : "-";
-    $("#restored-handler").textContent = state.handler;
+    const status = $(".pending-collab-status", row);
+    if (status) status.textContent = hasFeedback ? "已反馈" : hasWithdrawn ? "已撤回" : "-";
+    const handler = $(".pending-handler", row);
+    if (handler) handler.textContent = state.handler;
+    const feedback = $(".feedback-clamp", row);
+    const feedbackTooltip = $(".feedback-tooltip", row);
+    const feedbackText = hasFeedback ? collaborationFeedbackSummary() : "-";
+    if (feedback) feedback.textContent = feedbackText;
+    if (feedbackTooltip) feedbackTooltip.dataset.full = feedbackText;
     filterPendingRows();
   }
   function filterCollabRows() {
@@ -1207,12 +1250,135 @@
       collabStatus: row.dataset.collabStatus || cells[12]?.textContent.trim() || "-"
     };
   }
+  function clearInitiationDraft() {
+    $("#result-collab").checked = true;
+    $("#collab-editor").classList.remove("module-hidden");
+    $("#enable-material").checked = false;
+    $("#enable-confirm").checked = false;
+    $$(".material-location").forEach(input => { input.checked = false; });
+    $$("#material-editor-section .material-inline-editor").forEach(editor => editor.remove());
+    const confirmRows = $$(".confirm-editor-row");
+    confirmRows.slice(1).forEach(row => row.remove());
+    if (confirmRows[0]) {
+      $(".confirm-question", confirmRows[0]).value = "";
+      const upload = $(".upload-problem", confirmRows[0]);
+      if (upload) {
+        delete upload.dataset.uploaded;
+        upload.textContent = "插入问题图片";
+      }
+    }
+    $("#init-error").classList.remove("show");
+    syncModuleVisibility();
+  }
+  function prepareCollaborationDraft(row) {
+    const order = getPendingRowData(row);
+    state.order = {
+      prescription: order.prescription,
+      order: order.order,
+      clinic: order.clinic,
+      doctor: order.doctor,
+      patient: order.patient,
+      orderType: order.orderType,
+      stage: order.stage,
+      product: order.product,
+      model: order.model,
+      submittedAt: order.submittedAt,
+      expectedAt: "-",
+      urgent: "否",
+      handler: order.handler,
+      taskType: "新病例"
+    };
+    state.sourceRowId = row.id;
+    state.activeMaterials = [];
+    state.confirmations = [];
+    state.collaborationStatus = "未发起";
+    state.initiatedAt = "";
+    state.feedbackAt = "";
+    state.handler = order.handler;
+    state.versionUpdated = false;
+    state.submittedBy = "";
+    state.formalUpdated = false;
+    state.modelUpdated = false;
+    state.completed = new Set();
+    state.voluntaryUpdated = new Set();
+    state.consentModels = [];
+    state.pendingConsentModels = [];
+    state.pendingSubmitSource = "";
+    state.evidence = 0;
+    state.doctorConfirmResponses = {};
+    state.proxyConfirmResponses = {};
+    state.historyEvents = [];
+    state.sourceDisposition = "";
+    state.withdrawnSummary = "";
+    state.formContentLoaded = false;
+    state.orderPageType = order.orderType === "首次" ? "first" : "restart";
+    clearInitiationDraft();
+    renderOrderIdentity();
+    renderCollab();
+  }
+  function renderOrderIdentity() {
+    const order = state.order;
+    const initInfo = $("#mes-init .info-grid");
+    if (initInfo) {
+      initInfo.innerHTML = '<div><span>订单号：</span>' + escapeHtml(order.order) + '</div><div><span>订单类型：</span>' + escapeHtml(order.orderType) + '</div><div><span>医生：</span>' + escapeHtml(order.doctor) + '</div><div><span>患者：</span>' + escapeHtml(order.patient) + '</div><div><span>模型类型：</span>' + escapeHtml(order.model) + '</div><div><span>处理人：</span>' + escapeHtml(state.handler) + '</div><div><span>提交质检日期：</span>' + escapeHtml(order.submittedAt) + '</div><div><span>质检状态：</span>待处理</div>';
+    }
+    const proxyInfo = $("#cs-proxy .info-grid");
+    if (proxyInfo) {
+      proxyInfo.innerHTML = '<div><span>医生：</span>' + escapeHtml(order.doctor) + '</div><div><span>患者：</span>' + escapeHtml(order.patient) + '</div><div><span>订单：</span>' + escapeHtml(order.order) + '</div><div><span>订单类型：</span>' + escapeHtml(order.orderType) + '</div>';
+    }
+    const collabRow = $("#collab-row");
+    if (collabRow) {
+      const cells = collabRow.cells;
+      [order.prescription, order.order, order.clinic, order.doctor, order.patient].forEach((value, index) => { cells[index].textContent = value; });
+      cells[10].textContent = order.orderType;
+      cells[11].textContent = order.stage;
+      cells[12].textContent = order.product;
+      cells[13].textContent = order.model;
+      cells[14].textContent = order.submittedAt;
+      cells[15].textContent = order.expectedAt;
+      cells[16].textContent = order.urgent;
+      cells[17].textContent = state.handler;
+      cells[18].textContent = order.taskType;
+    }
+    const hungRow = $('#mes-hung tr[data-shared-collab="1"]');
+    if (hungRow) {
+      const cells = hungRow.cells;
+      [order.prescription, order.order, order.clinic, order.doctor, order.patient, order.orderType, order.stage, order.product, order.model, order.submittedAt, order.expectedAt, order.urgent].forEach((value, index) => { cells[index].textContent = value; });
+      cells[12].textContent = state.handler;
+      hungRow.dataset.doctor = order.doctor;
+      hungRow.dataset.patient = order.patient;
+    }
+    const workbenchRow = $("#mixed-case-row");
+    if (workbenchRow) {
+      $(".case-main strong", workbenchRow).textContent = order.patient;
+      $(".case-main span", workbenchRow).textContent = order.orderType + "　病例资料待完善";
+      workbenchRow.children[2].textContent = order.product;
+      $(".avatar", workbenchRow).textContent = order.patient.slice(-1) || "患";
+    }
+    const confirmHeader = $("#pms-confirm .case-header");
+    if (confirmHeader) {
+      $("h2", confirmHeader).textContent = order.patient;
+      const meta = $$(".case-meta span", confirmHeader);
+      if (meta[0]) meta[0].textContent = "医生：" + order.doctor;
+      if (meta[1]) meta[1].textContent = "订单类型：" + order.orderType;
+      if (meta[2]) meta[2].textContent = "订单号：" + order.order;
+    }
+    const timelineHeader = $("#pms-timeline .case-header");
+    if (timelineHeader) {
+      $("h2", timelineHeader).textContent = order.patient;
+      const meta = $$(".case-meta span", timelineHeader);
+      if (meta[0]) meta[0].textContent = order.orderType;
+      if (meta[1]) meta[1].textContent = order.product;
+      if (meta[2]) meta[2].textContent = "订单号：" + order.order;
+    }
+  }
   function openPendingDetail(row) {
-    const data = getPendingRowData(row);
-    if (row.id === "restored-pending-row" || row.dataset.currentOrder === "1") {
+    if (row.closest("#mes-list")) {
+      prepareCollaborationDraft(row);
       showScene("mes-init");
       return;
     }
+    const data = getPendingRowData(row);
     $("#pending-detail-content").innerHTML = [
       ["订单号", data.order], ["订单类型", data.orderType], ["医生", data.doctor], ["患者", data.patient],
       ["模型类型", data.model], ["处理人", data.handler], ["提交质检日期", data.submittedAt], ["协同状态", data.collabStatus]
@@ -1578,12 +1744,14 @@
     $("#restart-context").style.display = isRestart ? "block" : "none";
   }
   function renderCollab() {
+    renderOrderIdentity();
     const mats = state.activeMaterials.filter(x => !x.withdrawn).length;
     const qs = state.confirmations.filter(x => !x.withdrawn).length;
     const collabRow = $("#collab-row");
     const collabActive = state.collaborationStatus !== "未发起";
     collabRow.dataset.collabState = state.collaborationStatus;
     collabRow.dataset.collabActive = collabActive ? "1" : "0";
+    collabRow.cells[8].textContent = state.initiatedAt || "-";
     $("#collab-status").textContent = state.collaborationStatus;
     $("#handler-cell").textContent = state.handler;
     $$(".shared-collab-handler").forEach(cell => cell.textContent = state.handler);
@@ -1592,7 +1760,7 @@
     const feedbackSummary = collaborationFeedbackSummary();
     $("#collab-feedback-content").textContent = feedbackSummary;
     $("#collab-feedback-tooltip").dataset.full = feedbackSummary;
-    $("#collab-feedback-time").textContent = state.submittedBy ? "2026-08-07 11:26:08" : "-";
+    $("#collab-feedback-time").textContent = state.feedbackAt || "-";
     $("#collab-qc-status").textContent = state.sourceDisposition === "让步接收" ? "合格" : state.sourceDisposition || ({ "待反馈": "已挂起", "已反馈": "待处理", "已撤回": "待处理", "未发起": "待处理" })[state.collaborationStatus] || "待处理";
     const actions = $("#collab-actions");
     if (state.collaborationStatus === "待反馈") {
@@ -1651,6 +1819,7 @@
     const originLabel = "病例资料待完善";
     originRow.style.display = "grid";
     originAction.innerHTML = "";
+    $(".timeline-time", originRow).textContent = (state.initiatedAt || "2026-08-07 10:06:20").slice(0, 16);
     if (state.collaborationStatus === "未发起") {
       root.innerHTML = "";
       originRow.style.display = "none";
@@ -1678,12 +1847,14 @@
     $("#timeline-origin-title").textContent = originLabel + '（' + doctorFacingSummary(allMaterials, allConfirmations) + '）';
   }
   function renderWorkbench() {
+    renderOrderIdentity();
     const mixedActive = state.collaborationStatus === "待反馈" && !state.submittedBy && activeItems().length > 0;
     $("#mixed-case-row").style.display = mixedActive ? "grid" : "none";
     const materials = state.activeMaterials.filter(x => !x.withdrawn);
     const confirmations = state.confirmations.filter(x => !x.withdrawn);
     const entryScene = materials.length ? "pms-material" : "pms-confirm";
     $("#mixed-case-action").dataset.go = entryScene;
+    $("#mixed-case-action").dataset.orderType = state.orderPageType;
     $("#mixed-case-action").textContent = "修改";
     $("#mixed-confirm-block").classList.toggle("module-hidden", confirmations.length === 0);
     $("#proxy-confirm-block").classList.toggle("module-hidden", confirmations.length === 0);
@@ -1692,7 +1863,7 @@
     const count = mixedActive ? 1 : 0;
     $("#reminder-count").textContent = "您有 " + count + " 个订单需要完善";
     $("#login-reminder-cases").innerHTML = mixedActive
-      ? '<div class="login-reminder-case"><strong>0807案例A</strong>　首次　病例资料待完善</div>'
+      ? '<div class="login-reminder-case"><strong>' + escapeHtml(state.order.patient) + '</strong>　' + escapeHtml(state.order.orderType) + '　病例资料待完善</div>'
       : '';
     if (!mixedActive) hideLoginReminder();
     $("#pending-metric").textContent = mixedActive ? "29" : "28";
@@ -1789,6 +1960,7 @@
       modelUpdated: state.modelUpdated
     });
     state.submittedBy = source;
+    state.feedbackAt = "2026-08-07 11:26:08";
     state.doctorPageStale = false;
     state.collaborationStatus = "已反馈";
     const hasNonModelUpdate = [...new Set([...state.completed, ...state.voluntaryUpdated])].some(name => !name.endsWith("模型"));
@@ -1808,9 +1980,6 @@
       state.sourceDisposition = "";
       state.selectedOutcome = "none";
     }
-    const feedbackSummary = collaborationFeedbackSummary();
-    $$(".restored-feedback-content").forEach(node => { node.textContent = feedbackSummary; });
-    $$(".restored-feedback-tooltip").forEach(node => { node.dataset.full = feedbackSummary; });
     renderCollab();
     renderTimeline();
     toast(source === "医生" ? "提交成功，本次待办已完成" : source + "提交成功，医生端待办已关闭");
@@ -1818,6 +1987,7 @@
   }
   function resetDemo() {
     state = initialState();
+    $("#demo-role-select").value = "qc";
     if ($("#pending-collab-filter")) $("#pending-collab-filter").value = "all";
     if ($("#collab-status-filter")) $("#collab-status-filter").value = "all";
     ["pending-patient-filter", "pending-prescription-filter", "pending-order-filter", "pending-handler-filter"].forEach(id => {
@@ -1833,6 +2003,10 @@
     $(".pending-collab-status", $("#pending-row-0806")).textContent = "-";
     $("#pending-row-0804").dataset.collabStatus = "feedback";
     $(".pending-collab-status", $("#pending-row-0804")).textContent = "已反馈";
+    $("#restored-pending-row").dataset.collabStatus = "none";
+    $("#restored-collab-status").textContent = "-";
+    $(".restored-feedback-content").textContent = "-";
+    $(".restored-feedback-tooltip").dataset.full = "-";
     pendingActionRow = null;
     pendingActionType = "";
     $("#enable-material").checked = false;
@@ -1876,6 +2050,7 @@
     const link = event.target.closest("[data-scene]");
     if (link) {
       if (link.dataset.orderType) state.orderPageType = link.dataset.orderType;
+      if (link.dataset.scene === "mes-init") prepareCollaborationDraft($("#restored-pending-row"));
       showScene(link.dataset.scene);
     }
     const go = event.target.closest("[data-go]");
@@ -1915,6 +2090,7 @@
     }
 
     if (event.target.id === "reset-demo") resetDemo();
+    if (event.target.classList.contains("existing-case-action")) toast("该病例沿用现有资料补充流程，本原型不展开");
     if (event.target.id === "pending-filter-query") filterPendingRows();
     if (event.target.id === "pending-filter-reset") {
       $("#pending-collab-filter").value = "all";
@@ -1952,6 +2128,7 @@
     if (pendingHang) openOrderAction(pendingHang.closest("tr"), "hang");
     const pendingVoid = event.target.closest(".pending-void");
     if (pendingVoid) openOrderAction(pendingVoid.closest("tr"), "void");
+    if (event.target.closest(".pending-resume")) toast("恢复为已有操作，本原型仅演示本需求新增的重新分配");
     const pendingTarget = event.target.closest("[data-scroll-target]");
     if (pendingTarget) {
       $$("#pending-nav button").forEach(button => button.classList.toggle("active", button === pendingTarget));
@@ -2002,6 +2179,7 @@
         materials: cloneMaterials(state.activeMaterials),
         confirmations: cloneConfirmations(state.confirmations)
       });
+      state.initiatedAt = state.historyEvents[0].at;
       state.collaborationStatus = "待反馈";
       state.sourceDisposition = "";
       toast("保存成功：已生成一张医生协同单并挂起源任务");
@@ -2230,6 +2408,14 @@
   });
 
   document.addEventListener("change", event => {
+    if (event.target.id === "demo-role-select") {
+      const isCustomerService = event.target.value === "cs";
+      state.currentUser = isCustomerService ? "刘雨田" : "张吴秀";
+      state.currentUserInModelCenter = !isCustomerService;
+      state.currentUserInCustomerExperience = isCustomerService;
+      renderCollab();
+      toast(isCustomerService ? "已切换为客服身份，可执行代录" : "已切换为质检身份");
+    }
     if (event.target.id === "pending-collab-filter") filterPendingRows();
     if (event.target.id === "collab-status-filter") filterCollabRows();
     if (event.target.classList.contains("confirmation-basis")) {
@@ -2267,6 +2453,7 @@
 
   const hashScene = new URLSearchParams(location.hash.replace(/^#/, "")).get("scene");
   syncModuleVisibility();
+  if (hashScene === "mes-init") prepareCollaborationDraft($("#restored-pending-row"));
   showScene(sceneMeta[hashScene] ? hashScene : "overview");
   renderCollab();
   renderTimeline();
