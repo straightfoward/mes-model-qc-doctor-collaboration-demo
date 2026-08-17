@@ -194,11 +194,11 @@
     .login-reminder-icon { width: 20px; height: 20px; display: grid; flex: 0 0 20px; place-items: center; color: #fff; background: var(--pms-cyan); border-radius: 50%; font-size: 12px; }
     .login-reminder .close { min-width: 24px; min-height: 24px; color: #7a8794; }
     .login-reminder-note { margin: 6px 14px 14px 42px; padding: 2px 0; color: #17202b; font-size: 16px; font-weight: 700; line-height: 1.45; white-space: nowrap; }
-    .login-reminder-list { display: grid; padding: 0 14px 12px 42px; }
+    .login-reminder-list { display: grid; padding: 0 14px 8px 42px; }
+    .login-reminder-list.expanded { max-height: 238px; overflow-y: auto; }
     .login-reminder-case { display: block; overflow: hidden; padding: 9px 0; border-top: 1px solid #edf0f3; color: #475467; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
     .login-reminder-case strong { color: #26384b; font-size: 13px; }
-    .login-reminder-footer { display: flex; justify-content: flex-end; padding: 0 14px 10px 42px; }
-    .login-reminder-footer button { min-height: 0; padding: 0; color: #287fbd; background: transparent; border: 0; font-weight: 700; }
+    .login-reminder-toggle { width: 100%; min-height: 30px; padding: 7px 0 3px; color: #287fbd; background: transparent; border: 0; border-top: 1px solid #edf0f3; font-size: 12px; font-weight: 700; text-align: center; }
     @media (max-width: 620px) { .login-reminder-note { font-size: 15px; white-space: normal; } }
     @keyframes reminder-in { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
     .metric-row { display: grid; grid-template-columns: repeat(5, minmax(150px, 1fr)); gap: 18px; }
@@ -848,7 +848,6 @@
   </div>
   <div class="login-reminder-list" id="login-reminder-cases"></div>
   <p class="login-reminder-note">请在工作台“待完善”中点击“修改”处理</p>
-  <div class="login-reminder-footer"><button id="view-all-reminder-cases">查看全部</button></div>
 </div>
 
 <div class="modal-layer" id="append-modal">
@@ -1088,6 +1087,8 @@
   let currentScene = "overview";
   let pendingActionRow = null;
   let pendingActionType = "";
+  let loginReminderCases = [];
+  let loginReminderExpanded = false;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -1168,6 +1169,17 @@
   function showLoginReminder() {
     hideLoginReminder();
     $("#login-reminder-modal").classList.add("open");
+  }
+  function renderLoginReminderCases() {
+    const list = $("#login-reminder-cases");
+    const visibleCases = loginReminderExpanded ? loginReminderCases : loginReminderCases.slice(0, 3);
+    const remaining = Math.max(loginReminderCases.length - 3, 0);
+    list.classList.toggle("expanded", loginReminderExpanded && loginReminderCases.length > 6);
+    list.innerHTML = visibleCases.map(item =>
+      '<div class="login-reminder-case"><strong>' + escapeHtml(item.patient) + '</strong>　' + escapeHtml(item.orderType) + '　病例资料待完善</div>'
+    ).join("") + (remaining ?
+      '<button class="login-reminder-toggle" id="toggle-reminder-cases" aria-expanded="' + loginReminderExpanded + '">' +
+      (loginReminderExpanded ? '收起⌃' : '展开其余 ' + remaining + ' 个⌄') + '</button>' : '');
   }
   function clearSceneOverlays(nextScene) {
     $$(".modal-layer.open").forEach(layer => layer.classList.remove("open"));
@@ -1932,19 +1944,17 @@
     $("#proxy-confirm-block").classList.toggle("module-hidden", confirmations.length === 0);
     $("#proxy-material-section").classList.toggle("module-hidden", materials.length === 0);
     renderMaterialForms();
-    const reminderCases = mixedActive ? [
+    loginReminderCases = mixedActive ? [
       { patient: "0801案例F", orderType: "首次", at: "2026-08-01 09:12:00" },
       { patient: "0803案例E", orderType: "重启", at: "2026-08-03 14:20:00" },
       { patient: state.order.patient, orderType: state.order.orderType, at: state.initiatedAt },
       { patient: "0806案例B", orderType: "首次", at: "2026-08-06 16:08:00" },
       { patient: "0807案例D", orderType: "重启", at: "2026-08-07 17:30:00" }
     ].sort((a, b) => a.at.localeCompare(b.at)) : [];
-    const count = reminderCases.length;
+    loginReminderExpanded = false;
+    const count = loginReminderCases.length;
     $("#reminder-count").textContent = "您有 " + count + " 个订单需要完善";
-    $("#login-reminder-cases").innerHTML = reminderCases.slice(0, 4).map(item =>
-      '<div class="login-reminder-case"><strong>' + escapeHtml(item.patient) + '</strong>　' + escapeHtml(item.orderType) + '　病例资料待完善</div>'
-    ).join("");
-    $("#view-all-reminder-cases").style.display = count > 4 ? "inline" : "none";
+    renderLoginReminderCases();
     if (!count) hideLoginReminder();
     $("#pending-metric").textContent = mixedActive ? "29" : "28";
   }
@@ -2174,9 +2184,9 @@
     }
 
     if (event.target.id === "reset-demo") resetDemo();
-    if (event.target.id === "view-all-reminder-cases") {
-      hideLoginReminder();
-      $("#mixed-case-row")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (event.target.id === "toggle-reminder-cases") {
+      loginReminderExpanded = !loginReminderExpanded;
+      renderLoginReminderCases();
     }
     if (event.target.classList.contains("existing-case-action")) toast("该病例沿用现有资料补充流程，本原型不展开");
     if (event.target.id === "pending-filter-query") filterPendingRows();
