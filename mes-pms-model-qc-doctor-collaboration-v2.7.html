@@ -125,6 +125,8 @@
     .material-inline-editors { display: grid; gap: 8px; }
     .material-inline-editor { margin-top: 9px; overflow: hidden; background: #fff; border: 1px solid #e3b4ae; border-left: 3px solid var(--danger); }
     .material-inline-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 36px; padding: 7px 10px; color: #8c3b34; background: #fff7f5; font-weight: 700; }
+    .material-inline-title { min-width: 0; }
+    .material-inline-status { margin-left: auto; color: #667085; font-size: 12px; font-weight: 400; white-space: nowrap; }
     .material-inline-head button { color: #667085; background: transparent; border: 0; }
     .material-inline-body { padding: 10px; }
     .material-plain-text { width: 100%; min-height: 76px; resize: vertical; }
@@ -198,11 +200,6 @@
     .login-reminder-footer { display: flex; justify-content: flex-end; padding: 0 14px 10px 42px; }
     .login-reminder-footer button { min-height: 0; padding: 0; color: #287fbd; background: transparent; border: 0; font-weight: 700; }
     @media (max-width: 620px) { .login-reminder-note { font-size: 15px; white-space: normal; } }
-    .task-update-notice { position: fixed; z-index: 94; top: 84px; left: 50%; width: min(310px, calc(100vw - 32px)); display: none; padding: 13px 15px; background: #fff; border: 1px solid #d9e1e8; border-left: 3px solid var(--pms-cyan); border-radius: 4px; box-shadow: 0 8px 24px rgba(35,54,77,.16); transform: translateX(-50%); }
-    .task-update-notice.open { display: block; animation: reminder-in .18s ease-out; }
-    .task-update-head { display: flex; align-items: center; gap: 9px; color: #24364a; font-weight: 700; }
-    .task-update-actions { margin-top: 10px; padding-left: 29px; }
-    .task-update-actions button { min-height: 0; padding: 0; color: #287fbd; background: transparent; border: 0; font-weight: 700; }
     @keyframes reminder-in { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
     .metric-row { display: grid; grid-template-columns: repeat(5, minmax(150px, 1fr)); gap: 18px; }
     .metric { min-height: 92px; padding: 18px; background: #fff; border-left: 5px solid #c7d3df; box-shadow: var(--shadow); }
@@ -961,12 +958,6 @@
   </div>
 </div>
 
-<div class="task-update-notice" id="task-update-notice" role="status" aria-live="polite">
-  <div class="task-update-head"><span class="login-reminder-icon">i</span><span>提交时发现待完善事项有更新</span></div>
-  <div style="margin-top:7px;padding-left:29px;color:#667085;font-size:12px">当前内容已暂存，请加载新增事项后继续提交。</div>
-  <div class="task-update-actions"><button id="refresh-updated-task">加载新增事项</button></div>
-</div>
-
 <div class="modal-layer" id="model-risk-modal" data-persistent="true">
   <div class="modal" style="width:min(520px,96vw)">
     <div class="modal-head"><span>确认继续提交</span></div>
@@ -1057,7 +1048,6 @@
     feedbackAt: "",
     handler: "张吴秀",
     versionUpdated: false,
-    versionPromptVisible: false,
     newlyAddedTargets: [],
     submittedBy: "",
     formalUpdated: false,
@@ -1091,7 +1081,6 @@
     loginReminderShown: false,
     doctorPageStale: false,
     withdrawnSummary: "",
-    pendingRefreshScene: "",
     formContentLoaded: false,
     sourceDisposition: ""
   });
@@ -1180,10 +1169,6 @@
     hideLoginReminder();
     $("#login-reminder-modal").classList.add("open");
   }
-  function syncTaskUpdateNotice(scene = currentScene) {
-    const formOpen = ["pms-confirm", "pms-material", "cs-proxy"].includes(scene);
-    $("#task-update-notice").classList.toggle("open", formOpen && state.versionPromptVisible);
-  }
   function clearSceneOverlays(nextScene) {
     $$(".modal-layer.open").forEach(layer => layer.classList.remove("open"));
     if (nextScene !== "pms-workbench") hideLoginReminder();
@@ -1225,7 +1210,6 @@
     }
     if (id === "pms-timeline") renderTimeline();
     if (id === "outcome") renderOutcome();
-    syncTaskUpdateNotice(id);
   }
   function openModal(name) {
     if (name === "withdraw") renderWithdraw();
@@ -1440,16 +1424,31 @@
     let editor = $$(".material-inline-editor", container).find(item => item.dataset.target === input.value);
     if (!editor) {
       const sample = materialDescriptionSamples[input.value] || "";
-      container.insertAdjacentHTML("beforeend", '<div class="material-inline-editor" data-target="' + escapeHtml(input.value) + '"><div class="material-inline-head"><span>' + escapeHtml(input.value) + '｜质检说明（必填）</span><button type="button" class="material-inline-toggle" aria-label="展开或收起"></button></div><div class="material-inline-body"><textarea class="input material-plain-text material-item-desc" placeholder="请说明当前资料存在的问题及医生需要如何处理；文字必填，图片不能替代说明">' + escapeHtml(sample) + '</textarea><div class="material-image-upload"><button class="upload-problem" type="button" data-uploaded="0">上传问题图片（选填）</button><span class="problem-image-count">0/9</span><span>JPG/JPEG/PNG，单张≤10MB</span></div></div></div>');
+      container.insertAdjacentHTML("beforeend", '<div class="material-inline-editor" data-target="' + escapeHtml(input.value) + '"><div class="material-inline-head"><span class="material-inline-title">' + escapeHtml(input.value) + '｜质检说明（必填）</span><span class="material-inline-status">未填写 · 0张</span><button type="button" class="material-inline-toggle" aria-label="展开或收起"></button></div><div class="material-inline-body"><textarea class="input material-plain-text material-item-desc" placeholder="请说明当前资料存在的问题及医生需要如何处理；文字必填，图片不能替代说明">' + escapeHtml(sample) + '</textarea><div class="material-image-upload"><button class="upload-problem" type="button" data-uploaded="0">上传问题图片（选填）</button><span class="problem-image-count">0/9</span><span>JPG/JPEG/PNG，单张≤10MB</span></div></div></div>');
       editor = $$(".material-inline-editor", container).find(item => item.dataset.target === input.value);
     }
     editor.hidden = !input.checked;
-    if (input.checked) editor.classList.remove("collapsed");
+    updateMaterialEditorStatus(editor);
     return editor;
+  }
+  function updateMaterialEditorStatus(editor) {
+    if (!editor) return;
+    const hasText = normalizedRichText($(".material-item-desc", editor)?.value).length > 0;
+    const imageCount = Number($(".upload-problem", editor)?.dataset.uploaded || 0);
+    const status = $(".material-inline-status", editor);
+    if (status) status.textContent = (hasText ? "已填写" : "未填写") + " · " + imageCount + "张";
+  }
+  function expandMaterialEditor(editor) {
+    if (!editor) return;
+    const container = editor.closest(".material-inline-editors");
+    $$(".material-inline-editor", container).forEach(item => {
+      if (!item.hidden) item.classList.toggle("collapsed", item !== editor);
+    });
+    editor.classList.remove("collapsed");
   }
   function syncMaterialLocation(input) {
     const editor = ensureMaterialEditor(input);
-    if (input.checked) editor.classList.remove("collapsed");
+    if (input.checked) expandMaterialEditor(editor);
   }
   function normalizedRichText(value) {
     return String(value || "")
@@ -1471,12 +1470,21 @@
   }
   function validateMaterialEntries(inputs) {
     let valid = inputs.length > 0;
+    let firstInvalid = null;
     inputs.forEach(input => {
       const editor = ensureMaterialEditor(input);
       const hasText = normalizedRichText($(".material-item-desc", editor).value).length > 0;
       $(".material-inline-body", editor).classList.toggle("field-invalid", !hasText);
-      if (!hasText) valid = false;
+      updateMaterialEditorStatus(editor);
+      if (!hasText) {
+        valid = false;
+        if (!firstInvalid) firstInvalid = editor;
+      }
     });
+    if (firstInvalid) {
+      expandMaterialEditor(firstInvalid);
+      requestAnimationFrame(() => firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" }));
+    }
     return valid;
   }
   function escapeHtml(value) {
@@ -1638,6 +1646,28 @@
       }).join("");
     }
     renderConfirmationForms();
+  }
+  function loadUpdatedTask(refreshScene = currentScene) {
+    try {
+      captureConfirmationResponses();
+      state.versionUpdated = false;
+      renderMaterialForms();
+      state.formContentLoaded = true;
+      if (refreshScene === "pms-confirm" && state.activeMaterials.some(item => !item.withdrawn)) showScene("pms-material");
+      else showScene(refreshScene);
+      requestAnimationFrame(() => {
+        const firstTarget = state.newlyAddedTargets[0];
+        const target = firstTarget?.startsWith("q")
+          ? $('[data-confirm-question="' + firstTarget + '"]')
+          : document.getElementById((refreshScene === "cs-proxy" ? "proxy-item-" : "doctor-item-") + firstTarget);
+        target?.scrollIntoView({ behavior: "smooth", block: "center" });
+        state.newlyAddedTargets = [];
+      });
+      toast("已自动载入新增事项，请完成后重新提交；原填写内容和资料已保留");
+    } catch (error) {
+      state.versionUpdated = true;
+      toast("当前内容暂存失败，未载入新增事项，请重试");
+    }
   }
   function activeItems() {
     return [
@@ -2074,7 +2104,6 @@
     $("#append-error").classList.remove("show");
     syncModuleVisibility();
     hideLoginReminder();
-    $("#task-update-notice").classList.remove("open");
     $$(".modal-layer.open").forEach(layer => layer.classList.remove("open"));
     $("#material-page").classList.remove("show-all");
     $("#proxy-material-page").classList.remove("show-all");
@@ -2140,11 +2169,7 @@
     }
     const staleSubmitAction = event.target.closest("#submit-doctor-material, #submit-doctor-confirm, #submit-proxy");
     if (staleSubmitAction && state.versionUpdated) {
-      state.pendingRefreshScene = currentScene;
-      captureConfirmationResponses();
-      state.versionPromptVisible = true;
-      syncTaskUpdateNotice(currentScene);
-      toast("检测到新增事项，当前填写和已上传资料已暂存");
+      loadUpdatedTask(currentScene);
       return;
     }
 
@@ -2167,7 +2192,11 @@
     }
     if (["enable-material", "enable-confirm", "append-enable-material", "append-enable-confirm"].includes(event.target.id)) syncModuleVisibility();
     if (event.target.matches(".material-location, .append-location")) syncMaterialLocation(event.target);
-    if (event.target.classList.contains("material-inline-toggle")) event.target.closest(".material-inline-editor").classList.toggle("collapsed");
+    if (event.target.classList.contains("material-inline-toggle")) {
+      const editor = event.target.closest(".material-inline-editor");
+      if (editor.classList.contains("collapsed")) expandMaterialEditor(editor);
+      else editor.classList.add("collapsed");
+    }
     if (event.target.classList.contains("upload-problem")) {
       const current = Number(event.target.dataset.uploaded || 0);
       if (current >= 9) return toast("每个问题最多上传 9 张图片");
@@ -2176,6 +2205,7 @@
       if (event.target.closest(".material-image-upload")) {
         event.target.textContent = "继续上传问题图片";
         $(".problem-image-count", event.target.parentElement).textContent = count + "/9";
+        updateMaterialEditorStatus(event.target.closest(".material-inline-editor"));
       } else {
         event.target.textContent = "已插入问题图片（" + count + "/9）";
       }
@@ -2247,7 +2277,6 @@
       state.proxyConfirmResponses = {};
       state.historyEvents = [];
       state.versionUpdated = false;
-      state.versionPromptVisible = false;
       state.newlyAddedTargets = [];
       state.formContentLoaded = false;
       pushHistoryEvent("发起医生协同", {
@@ -2293,7 +2322,6 @@
         confirmations: cloneConfirmations(addedConfirmations)
       });
       state.versionUpdated = true;
-      state.versionPromptVisible = false;
       state.newlyAddedTargets = [...addedMaterials.map(item => item.target), ...addedConfirmations.map(item => item.id)];
       closeModal("append");
       renderCollab();
@@ -2398,37 +2426,11 @@
       toast("回复图片上传成功");
     }
     if (event.target.id === "submit-doctor-confirm") {
-      if (state.versionUpdated) {
-        state.pendingRefreshScene = currentScene;
-        syncTaskUpdateNotice(currentScene);
-        return;
-      }
       const ok = validateConfirmationResponses("doctor");
       $("#doctor-confirm-error").classList.toggle("show", !ok);
       if (!ok) return;
       state.formalUpdated = false;
       submitSuccess("医生");
-    }
-    if (event.target.id === "refresh-updated-task") {
-      const refreshScene = state.pendingRefreshScene || currentScene;
-      captureConfirmationResponses();
-      state.versionUpdated = false;
-      state.versionPromptVisible = false;
-      state.pendingRefreshScene = "";
-      $("#task-update-notice").classList.remove("open");
-      renderMaterialForms();
-      state.formContentLoaded = true;
-      if (refreshScene === "pms-confirm" && state.activeMaterials.some(item => !item.withdrawn)) showScene("pms-material");
-      else showScene(refreshScene);
-      requestAnimationFrame(() => {
-        const firstTarget = state.newlyAddedTargets[0];
-        const target = firstTarget?.startsWith("q")
-          ? $('[data-confirm-question="' + firstTarget + '"]')
-          : document.getElementById((refreshScene === "cs-proxy" ? "proxy-item-" : "doctor-item-") + firstTarget);
-        target?.scrollIntoView({ behavior: "smooth", block: "center" });
-        state.newlyAddedTargets = [];
-      });
-      toast("已加载新增事项，原填写内容和资料已保留");
     }
     if (event.target.classList.contains("doctor-upload")) {
       const item = event.target.closest(".doctor-material");
@@ -2458,11 +2460,6 @@
     }
     if (event.target.id === "doctor-draft") toast("暂存成功：未结束本轮协同");
     if (event.target.id === "submit-doctor-material") {
-      if (state.versionUpdated) {
-        state.pendingRefreshScene = currentScene;
-        syncTaskUpdateNotice(currentScene);
-        return;
-      }
       validateAndSubmitMaterials("医生");
     }
     if (event.target.classList.contains("proxy-upload")) {
@@ -2526,6 +2523,9 @@
     }
   });
   document.addEventListener("input", event => {
+    if (event.target.classList.contains("material-item-desc")) {
+      updateMaterialEditorStatus(event.target.closest(".material-inline-editor"));
+    }
     if (event.target.classList.contains("confirmation-other")) {
       confirmationResponse(event.target.dataset.confirmMode, event.target.dataset.questionId).other = event.target.value;
     }
