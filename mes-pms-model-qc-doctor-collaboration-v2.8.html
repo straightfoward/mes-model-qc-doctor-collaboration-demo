@@ -963,7 +963,7 @@
     <div class="modal-head"><span>确认继续提交</span></div>
     <div class="modal-body">
       <p id="model-risk-copy" style="margin:0;line-height:1.8">本次未上传新的上颌模型。继续提交将使用当前模型，可能影响方案准确性或矫治器贴合度，请确认是否继续。</p>
-      <div class="risk-followup" id="model-risk-followup">订单核销后如需更新模型，需通过重启订单重新提交。</div>
+      <div class="risk-followup" id="model-risk-followup">订单核销后如需更新模型，请通过重启订单重新提交。</div>
     </div>
     <div class="modal-foot"><button class="btn" id="return-to-material">返回完善</button><button class="btn primary" id="continue-model-submit">继续提交</button></div>
   </div>
@@ -2034,8 +2034,8 @@
       const names = state.pendingConsentModels.join("、");
       $("#model-risk-copy").textContent = "本次未上传新的" + names + "。继续提交将使用当前模型，可能影响方案准确性或矫治器贴合度，请确认是否继续。";
       $("#model-risk-followup").textContent = source === "客服"
-        ? "请确认已向医生说明上述风险；订单核销后如需更新模型，需通过重启订单重新提交。"
-        : "订单核销后如需更新模型，需通过重启订单重新提交。";
+        ? "请确认已向医生说明上述风险；订单核销后如需更新模型，请通过重启订单重新提交。"
+        : "订单核销后如需更新模型，请通过重启订单重新提交。";
       openModal("model-risk");
       return;
     }
